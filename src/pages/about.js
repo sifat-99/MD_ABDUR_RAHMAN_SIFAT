@@ -38,7 +38,7 @@ function about() {
       </Head>
       <TransitionEffects />
       <main>
-        <Layout className="pt-16">
+        <Layout className="pt-16 bg-transparent dark:bg-transparent">
           <AnimatedText
             text="Passion Fuels Purpose!"
             className="my-16 lg:!text-7xl sm:!text-6xl xs:!text-4xl sm:mb-8"
