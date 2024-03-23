@@ -10,7 +10,7 @@ function HireMe() {
           href="mailto:mdabdurrahmansifat@gmail.com"
           className="flex items-center justify-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-dark text-light border shadow-md border-solid w-20 h-20 rounded-full hover:bg-white hover:text-dark transition-all dark:bg-light dark:text-dark hover:dark:bg-dark hover:dark:text-light hover:dark:border-light capitalize font-semibold md:w-12 md:h-12 md:text-[10px]"
         >
-          hire me
+          Hire me
         </Link>
       </div>
     </div>

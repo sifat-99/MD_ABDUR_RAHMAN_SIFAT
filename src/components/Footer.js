@@ -19,7 +19,7 @@ function Footer() {
 
         <div className="flex items-center gap-2 justify-center ">
           <motion.a
-            href="https://twitter.com/"
+            href="https://twitter.com/md_sifat_99"
             target={"_blank"}
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.5 }}
@@ -28,7 +28,7 @@ function Footer() {
             <FaTwitter />
           </motion.a>
           <motion.a
-            href="https://instagram.com/"
+            href="https://www.instagram.com/abdur_rahman_sifat_khan/"
             target={"_blank"}
             className=" mx-3  text-3xl"
             whileHover={{ y: -2 }}

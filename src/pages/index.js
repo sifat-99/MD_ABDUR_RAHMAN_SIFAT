@@ -50,15 +50,8 @@ export default function Home() {
                   className="bg-dark flex gap-2 items-center p-2.5 text-light px-5 rounded-lg text-lg font-semibold hover:bg-light hover:text-dark transition-all border-2 border-solid border-transparent hover:border-dark dark:bg-light dark:text-dark hover:dark:bg-dark hover:dark:text-light hover:dark:border-light md:p-2 md:px-4 md:text-base"
                   download={true}
                 >
-                  resume <FaArrowUpRightFromSquare />
+                  Resume <FaArrowUpRightFromSquare />
                 </Link>
-                {/* <Link
-                  href="/contact"
-                  target={"_blank"}
-                  className="ml-4 font-semibold capitalize dark:text-light text-dark underline md:text-base"
-                >
-                  Contact
-                </Link> */}
                 {contact}
               </div>
             </div>

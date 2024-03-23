@@ -4,14 +4,13 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { DiGithubAlt } from "react-icons/di";
-import project1 from "../../public/images/projects/Worldist-keep-track-of-your-adventures.png";
-import project2 from "../../public/images/projects/mama-z-place (1)screen new.png";
-import project3 from "../../public/images/projects/fast-react-pizza SCREENSHOT.png";
-import project4 from "../../public/images/projects/React-App.png";
-import project5 from "../../public/images/projects/loan shot.png";
 import { motion } from "framer-motion";
 import TransitionEffects from "@/components/TransitionEffects";
 import Layout from "@/components/Layout";
+import { useEffect, useState } from "react";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const FramerImage = motion(Image);
 
@@ -62,59 +61,98 @@ function FeaturedProject({ type, title, summary, img, link, github }) {
     </article>
   );
 }
-function Project({ type, link, img, title, summary }) {
+function Project({
+  title,
+  description,
+  live,
+  img,
+  Client_Side,
+  Server_Side,
+  technologies,
+}) {
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 1000,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+  };
   return (
-    <article className="w-full   rounded-2xl  border bg-transparent  p-6 border-dark dark:bg-transparent dark:border-light xs:p-4 ">
-      <div className="grid gap-2 h-[29rem] grid-rows-[1fr,1fr,auto]">
-        <Link
-          href={link}
-          target="blank"
-          className=" rounded-lg overflow-hidden "
-        >
-          <FramerImage
-            src={img}
-            alt="img"
-            className="w-full h-full"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 1.2 }}
-            priority
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
-          />
-        </Link>
-        <div className="  flex flex-col justify-between dark:text-light  items-start ">
-          <h2 className="lg:text-2xl text-left capitalize text-dark text-lg font-semibold dark:text-white mt-2">
-            {title}
-          </h2>
-          <p className=" text-[13px] text-dark dark:text-stone-300">
-            {summary}
-          </p>
+    <article className="w-full h-full rounded-2xl border bg-transparent p-6 border-dark dark:bg-transparent dark:border-light xs:p-4">
+    <Slider {...settings}>
+      {img.map((image, index) => (
+        <div key={index}>
+          <Link href={live} target="_blank">
+            <FramerImage
+              src={image}
+              alt="img"
+              width={100}
+              height={100}
+              className="w-full h-full"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 1.2 }}
+              priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
+            />
+          </Link>
         </div>
-        <div className="mt-2 w-full flex items-center  justify-between ">
+      ))}
+    </Slider>
+    <div className="flex flex-col gap-8 justify-center dark:text-light items-start">
+      <div>
+        <h2 className="lg:text-2xl text-left capitalize text-dark text-lg font-semibold dark:text-white mt-2">
+          {title}
+        </h2>
+        <p className="text-[13px] text-dark dark:text-stone-300">
+          {description}
+        </p>
+      </div>
+      <div className="flex items-center justify-between w-full">
           <Link
-            href={link}
-            target="blank"
+            href={live}
+            target="_blank"
             className="rounded-lg bg-dark text-light text-lg font-semibold p-2 px-4 underline md:text-base"
           >
             visit
           </Link>
-          <Link
-            href="https://github.com/willybrown100/Worldist"
-            target="_blank"
-            className="text-dark"
-          >
-            <DiGithubAlt className="text-4xl  text-dark dark:text-stone-100" />
-          </Link>
+          <div className="flex gap-4">
+            <Link
+              href={Client_Side}
+              target="_blank"
+              className="text-dark flex flex-col items-center justify-center text-sm"
+            >
+              Server Site
+              <DiGithubAlt className="text-4xl text-dark dark:text-stone-100" />
+            </Link>
+            <Link
+              href={Server_Side}
+              target="_blank"
+              className="text-dark flex flex-col items-center justify-center text-sm"
+            >
+              Client Site
+              <DiGithubAlt className="text-4xl text-dark dark:text-stone-100" />
+            </Link>
+          </div>
         </div>
       </div>
-    </article>
+  </article>
   );
 }
 
-function projects() {
+function Projects() {
+  const [projects, setProjects] = useState([]);
+  useEffect(() => {
+    fetch("/Projects.json")
+      .then((res) => res.json())
+      .then((data) => setProjects(data));
+  }, []);
+
   return (
     <>
       <Head>
-        <title>Sifat || projects page</title>
+        <title>SIFAT || projects page</title>
         <meta name="description " content="any description" />
       </Head>
       <TransitionEffects />
@@ -124,49 +162,22 @@ function projects() {
           className="mb-16 lg:!text-7xl mt-4 sm:mb-8 sm:!text-6xl xs:!text-4xl"
         />
         <Layout className="mt-6 ">
-          <div className="  lgs:grid lgs:grid-cols-3 gap-2  bg-gradient-to-r from-[#b9b4e9] via-[#b191f1] to-[#f1a5fd] dark:bg-gradient-to-r dark:from-[#191919] dark:via-[#040304] dark:to-[#000000] ">
-            <div className="mb-6">
-              <Project
-                title="worldist app"
-                summary="A feature-rich A world map that tracks your footsteps into every city you can think of. Never forget your wonderful experiences, and show your friends how you have wandered the world. "
-                link="https://worldist-app.netlify.app/"
-                img={project1}
-              />
-            </div>
-            <div className="mb-6">
-              <Project
-                title="mama z"
-                summary="mama z is a business that prepares and serves food and drinks to customers.[1] Meals are generally served and eaten on the premises, but many restaurants also offer take-out and food delivery services. mama z vary greatly in appearance and offerings, including a wide variety of cuisines and service models ranging from inexpensive"
-                link="https://mamaz-app.netlify.app/"
-                img={project2}
-              />
-            </div>
-            <div className="mb-6">
-              {" "}
-              <Project
-                title=" fast food"
-                summary="fast food is a unique and expansive food delivery service. Rather than open our own food service establishment, which has limited potential, we propose a venture that involves only delivering food made and provided by others. Certain restaurants and fast food locations do not offer the convenience of a delivery service. Our business aims to fill that portion of the market that has so far been neglected."
-                link="https://fast-food-apps.netlify.app/"
-                img={project3}
-              />
-            </div>
-            <div className="mb-6">
-              {" "}
-              <Project
-                title="long dist"
-                summary="allow users to Store all your travel list and important information digitally, usually in a cloud-based storage system. Type, write, and draw notes on the device of choice just as one would using pen and pape"
-                link="https://long-dist.netlify.app/"
-                img={project4}
-              />
-            </div>
-            <div className="mb-6">
-              {" "}
-              <Project
-                title="t loan"
-                summary="A loan lending app is a mobile application that allows users to apply for and receive loans from lenders. These apps typically offer a variety of loan types, such as personal loans, business loans, and student loans. They can also offer a variety of loan terms, such as short-term loans and long-term loans"
-                link="https://long-dist.netlify.app/"
-                img={project5}
-              />
+          <div className="  bg-gradient-to-r from-[#b9b4e9] via-[#b191f1] to-[#f1a5fd] dark:bg-gradient-to-r dark:from-[#191919] dark:via-[#040304] dark:to-[#000000] ">
+            <div
+              className={`mb-6 ${projects.length > 2 ? "lgs:grid-cols-3 gap-4" : "lgs:grid-cols-2 gap-12"} lgs:grid `}
+            >
+              {projects.map((project, index) => (
+                <Project
+                  key={index}
+                  title={project.title}
+                  description={project.description}
+                  live={project.live_link}
+                  img={project.images}
+                  Client_Side={project.github_link}
+                  Server_Side={project.server_link}
+                  technologies={project.technology_used}
+                />
+              ))}
             </div>
           </div>
         </Layout>
@@ -175,4 +186,13 @@ function projects() {
   );
 }
 
-export default projects;
+export default Projects;
+
+{
+  /* <Project
+                title="worldist app"
+                summary="A feature-rich A world map that tracks your footsteps into every city you can think of. Never forget your wonderful experiences, and show your friends how you have wandered the world. "
+                link="https://worldist-app.netlify.app/"
+                img={project1}
+              /> */
+}

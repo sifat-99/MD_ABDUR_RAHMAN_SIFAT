@@ -96,12 +96,12 @@ function Navbar() {
           <CustomLink href="/" title="Home" className="" />
           <CustomLink href="/about" title="About" className="mx-4" />
           <CustomLink href="/projects" title="Projects" className="mx-4" />
-          <CustomLink href="/articles" title="articles" className="ml-4" />
+          {/* <CustomLink href="/articles" title="articles" className="ml-4" /> */}
         </nav>
 
         <nav className="flex dark:text-primaryDark  flex-wrap items-center">
           <motion.a
-            href="https://twitter.com/"
+            href="https://twitter.com/md_sifat_99"
             target={"_blank"}
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.5 }}
@@ -110,7 +110,7 @@ function Navbar() {
             <FaTwitter />
           </motion.a>
           <motion.a
-            href="https://instagram.com/"
+            href="https://www.instagram.com/abdur_rahman_sifat_khan/"
             target={"_blank"}
             className=" mx-3  text-3xl"
             whileHover={{ y: -2 }}
@@ -189,7 +189,7 @@ function Navbar() {
 
           <nav className="flex mt-2 flex-wrap text-primaryDark dark:text-dark items-center">
             <motion.a
-              href="https://twitter.com/"
+              href="https://twitter.com/md_sifat_99"
               target={"_blank"}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.5 }}
@@ -198,7 +198,7 @@ function Navbar() {
               <FaTwitter />
             </motion.a>
             <motion.a
-              href="https://instagram.com/"
+              href="https://www.instagram.com/abdur_rahman_sifat_khan/"
               target={"_blank"}
               className=" mx-3  text-3xl"
               whileHover={{ y: -2 }}

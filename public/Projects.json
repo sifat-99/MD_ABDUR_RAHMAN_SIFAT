@@ -1,0 +1,28 @@
+[
+  {
+    "title": "Meet Ready",
+    "images": [
+      "https://i.ibb.co/Tkx3348/Clean-Shot-2024-03-23-at-22-09-05-2x.png",
+      "https://i.ibb.co/sHFBcHJ/Clean-Shot-2024-03-23-at-22-09-42-2x.png",
+      "https://i.ibb.co/j54trBv/Clean-Shot-2024-03-23-at-22-09-18-2x.png"
+    ],
+    "description": "'Meet Ready' Your All-in-One Meeting Management Platform Meet Ready simplifies scheduling, calendar management, and professional networking. With features like easy meeting scheduling, customizable calendars, public profiles with resume building, and robust networking tools, Meet Ready offers a seamless solution for professionals. Stay organized, showcase your skills, and connect with others effortlessly. Join Meet Ready today and take charge of your professional life.",
+    "github_link": "https://github.com/SakifAzwad/Meet-Ready",
+    "live_link": "https://meet-ready.vercel.app/",
+    "server_link": "https://github.com/SakifAzwad/Meet-Ready",
+    "technology_used": "React, Next.js, javascript, Tailwind CSS, Firebase, Google Calendar API, Zoom api"
+  },
+  {
+    "title": "Bookwarp",
+    "images": [
+      "https://i.ibb.co/T0Bg9nV/Clean-Shot-2024-03-23-at-22-20-41-2x.png",
+      "https://i.ibb.co/MS4FWCr/Clean-Shot-2024-03-23-at-22-20-57-2x.png",
+      "https://i.ibb.co/sKzR2VZ/Clean-Shot-2024-03-23-at-22-21-46-2x.png"
+    ],
+    "description": "BookWarp is a web-based platform aimed at fostering a community of book enthusiasts by facilitating seamless book exchanges. Developed using TypeScript and Next.js, it allows users to register, list books, search for titles, and communicate with others for exchanges. Key features include a messenger chatbot, user profiles, bookmarking, contact via email, book condition rating, filtering options, wishlists, and reviews. The platform emphasizes user documentation and intuitive interfaces for a positive user experience. Through its features, BookWarp aims to revive the joy of reading, foster connections, and celebrate diverse narratives within a thriving community of readers.",
+    "github_link": "https://github.com/dronatoo21/bookwarp-client/tree/main",
+    "live_link": "https://bookwarp.vercel.app/",
+    "server_link": "https://github.com/dronatoo21/bookwarp-server",
+    "technology_used": "React, Next.js, TypeScript, Tailwind CSS, Firebase, Node, Express, MongoDB, Nodemailer"
+  }
+]
