@@ -17,7 +17,7 @@ const FramerImage = motion(Image);
 
 function FeaturedProject({ type, title, summary, img, link, github }) {
   return (
-    <article className="w-full flex justify-between items-center border border-solid shadow-2xl bg-light border-dark rounded-3xl relative dark:bg-dark lg:flex-col lg:p-8 xs:rounded-2xl xs:rounded-br-3xl xs:p-4">
+    <article className="w-full flex justify-between items-center border border-solid shadow-2xl bg-transparent border-dark rounded-3xl relative dark:bg-dark lg:flex-col lg:p-8 xs:rounded-2xl xs:rounded-br-3xl xs:p-4">
       <div className="absolute top-0 -right-3 -z-10 w-[102%] h-[103%] rounded-2xl  bg-dark rounded-br-3xl dark:bg-light xs:-right-2 sm:h-[102%] xs-w-full xs:rounded-[1.5rem] "></div>
       <Link
         href={link}
@@ -64,7 +64,7 @@ function FeaturedProject({ type, title, summary, img, link, github }) {
 }
 function Project({ type, link, img, title, summary }) {
   return (
-    <article className="w-full   rounded-2xl  border bg-light p-6 border-dark dark:bg-dark dark:border-light xs:p-4 ">
+    <article className="w-full   rounded-2xl  border bg-transparent  p-6 border-dark dark:bg-transparent dark:border-light xs:p-4 ">
       <div className="grid gap-2 h-[29rem] grid-rows-[1fr,1fr,auto]">
         <Link
           href={link}
@@ -114,7 +114,7 @@ function projects() {
   return (
     <>
       <Head>
-        <title>projects page</title>
+        <title>Sifat || projects page</title>
         <meta name="description " content="any description" />
       </Head>
       <TransitionEffects />
@@ -123,8 +123,8 @@ function projects() {
           text="projects"
           className="mb-16 lg:!text-7xl mt-4 sm:mb-8 sm:!text-6xl xs:!text-4xl"
         />
-        <Layout className="mt-6">
-          <div className="  lgs:grid lgs:grid-cols-3 gap-2">
+        <Layout className="mt-6 ">
+          <div className="  lgs:grid lgs:grid-cols-3 gap-2  bg-gradient-to-r from-[#b9b4e9] via-[#b191f1] to-[#f1a5fd] dark:bg-gradient-to-r dark:from-[#191919] dark:via-[#040304] dark:to-[#000000] ">
             <div className="mb-6">
               <Project
                 title="worldist app"
