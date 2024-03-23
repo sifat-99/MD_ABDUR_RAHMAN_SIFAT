@@ -179,12 +179,12 @@ function Navbar() {
               className=""
               toggle={handleClick}
             />
-            <CustomMobileLink
+            {/* <CustomMobileLink
               href="/articles"
               title="articles"
               className=""
               toggle={handleClick}
-            />
+            /> */}
           </nav>
 
           <nav className="flex mt-2 flex-wrap text-primaryDark dark:text-dark items-center">
