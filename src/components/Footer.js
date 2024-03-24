@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 
 function Footer() {
   return (
-    <footer className="w-full border-t-2 dark:text-light py-2 px-16 dark:border-light border-solid border-dark font text-lg sm:text-base">
+    <footer className="w-full pt-8 border-t-2 dark:text-light py-2 px-16 dark:border-light border-solid border-dark font text-lg sm:text-base">
       <div className="text-center flex flex-col gap-y-2">
         <h3>{new Date().getFullYear()} &copy; All rights reserved</h3>
 

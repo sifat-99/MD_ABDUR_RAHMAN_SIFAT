@@ -1,32 +1,20 @@
-/* eslint-disable jsx-a11y/alt-text */
-/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import Logo from "./Logo";
 import { useRouter } from "next/router";
-import { FaAlignRight } from "react-icons/fa6";
-import moon from "../../public/images/svgs/moon.svg";
 import {
   FaFacebook,
   FaGithub,
   FaInstagram,
-  FaInstagramSquare,
   FaLinkedinIn,
   FaTwitter,
-  FaTwitterSquare,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
 import useDarkTheme from "./Hooks/useDarkTheme";
-import {
-  WiDaySunny,
-  WiMoonAltNew,
-  WiMoonAltWaningCrescent2,
-} from "react-icons/wi";
 import { useState } from "react";
-import Image from "next/image";
 
 const CustomLink = ({ href, title, className = "" }) => {
   const router = useRouter();
-  console.log(router);
+  // console.log(router);
   return (
     <Link
       href={href}
@@ -154,7 +142,7 @@ function Navbar() {
             className="ml-6 flex items-center text-4xl rounded-full justify-center "
           >
             {mode === "dark" ? (
-              <p className="text-white">
+              <p className="text-white hover:animate-spin-slow">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="1em"
@@ -300,7 +288,7 @@ function Navbar() {
                 </svg>
               </p>
             ) : (
-              <p className="text-black">
+              <p className="text-black hover:animate-spin-slow">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="1em"
@@ -564,7 +552,7 @@ function Navbar() {
               className="ml-6 flex items-center text-4xl rounded-full justify-center "
             >
               {mode === "dark" ? (
-              <p className="text-white">
+              <p className="text-white hover:animate-spin-slow">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="1em"
@@ -710,7 +698,7 @@ function Navbar() {
                 </svg>
               </p>
             ) : (
-              <p className="text-black">
+              <p className="text-black hover:animate-spin-slow">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="1em"

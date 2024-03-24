@@ -80,7 +80,8 @@ function Project({
     autoplaySpeed: 3000,
   };
   return (
-    <article className="w-full h-full rounded-2xl border bg-transparent p-6 border-dark dark:bg-transparent dark:border-light xs:p-4">
+    <article className="relative w-full h-full rounded-2xl border bg-transparent p-6 border-dark dark:bg-transparent dark:border-light xs:p-4 flex flex-col">
+  <div className="flex-grow">
     <Slider {...settings}>
       {img.map((image, index) => (
         <div key={index}>
@@ -102,42 +103,46 @@ function Project({
     </Slider>
     <div className="flex flex-col gap-8 justify-center dark:text-light items-start">
       <div>
-        <h2 className="lg:text-2xl text-left capitalize text-dark text-lg font-semibold dark:text-white mt-2">
-          {title}
-        </h2>
-        <p className="text-[13px] text-dark dark:text-stone-300">
+        <AnimatedText
+                text={title}
+              
+                className="lg:!text-3xl !mb-2 !text-left !capitalize !text-dark !text-2xl !font-semibold dark:!text-white !mt-2"
+              />
+        <p className="text-[13px] text-dark dark:text-stone-300 text-justify">
           {description}
         </p>
       </div>
-      <div className="flex items-center justify-between w-full">
-          <Link
-            href={live}
-            target="_blank"
-            className="rounded-lg bg-dark text-light text-lg font-semibold p-2 px-4 underline md:text-base"
-          >
-            visit
-          </Link>
-          <div className="flex gap-4">
-            <Link
-              href={Client_Side}
-              target="_blank"
-              className="text-dark flex flex-col items-center justify-center text-sm"
-            >
-              Server Site
-              <DiGithubAlt className="text-4xl text-dark dark:text-stone-100" />
-            </Link>
-            <Link
-              href={Server_Side}
-              target="_blank"
-              className="text-dark flex flex-col items-center justify-center text-sm"
-            >
-              Client Site
-              <DiGithubAlt className="text-4xl text-dark dark:text-stone-100" />
-            </Link>
-          </div>
-        </div>
-      </div>
-  </article>
+    </div>
+  </div>
+  <section className="flex items-center justify-between p-2 mt-8">
+    <Link
+      href={live}
+      target="_blank"
+      className="rounded-lg bg-dark text-light text-lg font-semibold p-2 px-4 underline md:text-base hover:bg-white hover:text-dark dark:bg-white dark:text-black dark:hover:bg-dark dark:hover:text-light"
+    >
+      Live Link
+    </Link>
+    <div className="flex gap-4">
+      <Link
+        href={Client_Side}
+        target="_blank"
+        className="text-dark dark:text-white flex flex-col items-center justify-center text-sm"
+      >
+        Server Repo
+        <DiGithubAlt className="text-4xl text-dark dark:text-stone-100 hover:animate-spin-slow" />
+      </Link>
+      <Link
+        href={Server_Side}
+        target="_blank"
+        className="text-dark dark:text-white flex flex-col items-center justify-center text-sm"
+      >
+        Client Repo
+        <DiGithubAlt className="text-4xl text-dark dark:text-stone-100 hover:animate-spin-slow" />
+      </Link>
+    </div>
+  </section>
+</article>
+
   );
 }
 
@@ -161,7 +166,7 @@ function Projects() {
           text="projects"
           className="mb-16 lg:!text-7xl mt-4 sm:mb-8 sm:!text-6xl xs:!text-4xl"
         />
-        <Layout className="mt-6 ">
+        <Layout>
           <div className="  bg-gradient-to-r from-[#b9b4e9] via-[#b191f1] to-[#f1a5fd] dark:bg-gradient-to-r dark:from-[#191919] dark:via-[#040304] dark:to-[#000000] ">
             <div
               className={`mb-6 ${projects.length > 2 ? "lgs:grid-cols-3 gap-4" : "lgs:grid-cols-2 gap-12"} lgs:grid `}
@@ -187,12 +192,3 @@ function Projects() {
 }
 
 export default Projects;
-
-{
-  /* <Project
-                title="worldist app"
-                summary="A feature-rich A world map that tracks your footsteps into every city you can think of. Never forget your wonderful experiences, and show your friends how you have wandered the world. "
-                link="https://worldist-app.netlify.app/"
-                img={project1}
-              /> */
-}
