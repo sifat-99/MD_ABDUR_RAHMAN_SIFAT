@@ -16,11 +16,11 @@ function Skill({ name, x, y }) {
 function Skills() {
   return (
     <>
-      <h2 className="font-bold underline mb-4 text-4xl mt-64 w-full text-center dark:text-light md:text-6xl md:mt-32 ">
+      <h2 className="font-bold underline mb-4 text-4xl mt-24 w-full text-center dark:text-light md:text-6xl md:mt-12 ">
         Skills
       </h2>
       <div
-        className="w-full mb-4 h-screen lg:h-[80vh] sm:h-[60vh] xs:h-[50vh] relative rounded-full justify-center flex items-center bg-circularLight dark:bg-circularDark
+        className="w-full mb-8 h-screen lg:h-[80vh] sm:h-[60vh] xs:h-[50vh] relative rounded-full justify-center flex items-center bg-circularLight dark:bg-circularDark
        lg:bg-circularLightLg lg:dark:bg-circularDarkLg
        md:bg-circularLightMd md:dark:bg-circularDarkMd
        sm:bg-circularLightSm sm:dark:bg-circularDarkSm
@@ -36,7 +36,7 @@ function Skills() {
         <Skill name="CSS" x="-9vw" y="-17vw" />
         <Skill name="javascript" x="16vw" y="6vw" />
         <Skill name="ReactJS" x="0vw" y="10vw" />
-        <Skill name="web design" x="32vw" y="-5vw" />
+        <Skill name="web design" x="30vw" y="-5vw" />
         <Skill name="NextJS" x="-25vw" y="18vw" />
         <Skill name="tailwind" x="22vw" y="20vw" />
         <Skill name="NodeJS" x="10vw" y="-20vw" />

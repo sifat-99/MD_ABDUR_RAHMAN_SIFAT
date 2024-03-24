@@ -18,7 +18,7 @@ export default function Home() {
         <meta name="description" content="Created by sifat khan" />
       </Head>
       <TransitionEffects />
-      <main className="flex items-center   text-dark w-full dark:text-white max-h-screen">
+      <main className="flex items-center   text-dark w-full dark:text-white">
         <Layout className="pt-0 mb-10 bg-transparent dark:bg-transparent">
           <div className="flex items-center justify-between gap-6 w-full lg:flex-col">
             <div className="w-1/2 md:w-full">
