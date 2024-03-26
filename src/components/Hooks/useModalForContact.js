@@ -18,10 +18,10 @@ const useModalForContact = () => {
       subject: formData.get("subject"),
       message: formData.get("message"),
     };
-    console.log(data);
+    // console.log(data);
 
     await sendContactForm(data).then((res) => {
-      console.log(res);
+      // console.log(res);
       if (res.status === 200) {
         Swal.fire({
           position: "top-end",
