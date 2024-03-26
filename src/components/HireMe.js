@@ -3,6 +3,9 @@ import { CircularText } from "./Icons";
 
 function HireMe() {
 
+
+  
+
   return (
     <div className="fixed left-4 bottom-4 items-center flex overflow-hidden justify-center md:right-8 md:left-auto md:top-0 md:bottom-auto md:absolute sm:right-0">
       <div className="w-48 h-auto relative flex items-center justify-center md:w-24">
