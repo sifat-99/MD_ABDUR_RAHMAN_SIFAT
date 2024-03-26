@@ -1,6 +1,5 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-
 import { mailOptions, transporter } from "../../../config/nodemailer";
+
 const CONTACT_MESSAGE_FIELDS = {
   name: "Name",
   email: "Email",
@@ -24,35 +23,27 @@ const generateEmailContent = (data) => {
   };
 };
 
-const handler = async(req, res) => {
+const handler = async (req, res) => {
   console.log(req.body);
   if (req.method === "POST") {
     const data = req.body;
-    if (!data.name && !data.email &&!data.subject && !data.message) {
+    if (!data.name || !data.email || !data.subject || !data.message) {
       return res.status(422).json({ message: "Invalid input" });
     }
-    try{
+    try {
       await transporter.sendMail({
         ...mailOptions,
         ...generateEmailContent(data),
         subject: data.subject,
-      })
-      .then(() => {
-        return res.status(200).json({ message: "Message sent successfully" });
-      }
-      )
-      .catch((error) => {
-        console.error(error);
-        return res.status(500).json({ message: "An error occurred while sending the message" });
       });
-    }
-    catch(error){
+      return res.status(200).json({ message: "Message sent successfully" });
+    } catch (error) {
       console.error(error);
-      return res.status(500).json({message: "An error occurred while sending the message"});
+      return res.status(500).json({ message: "An error occurred while sending the message" });
     }
-
+  } else {
+    return res.status(400).json({ message: "This is a Bad request" });
   }
-  res.status(400).json({ message: "This is a Bad request" });
 };
 
 export default handler;
