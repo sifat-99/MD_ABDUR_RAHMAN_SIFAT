@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { CircularText } from "./Icons";
-import useModalForHire from "./Hooks/useModalForHire";
 
 function HireMe() {
 
