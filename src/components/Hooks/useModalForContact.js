@@ -5,27 +5,35 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { MdOutlineAddIcCall } from "react-icons/md";
+import { sendContactForm } from "../../../lib/api";
 
 const useModalForContact = () => {
-  const handleContact = (e) => {
+  const handleContact = async (e) => {
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
     const data = {
       name: formData.get("name"),
       email: formData.get("email"),
+      subject: formData.get("subject"),
       message: formData.get("message"),
     };
     console.log(data);
-    Swal.fire({
-      position: "top-end",
-      icon: "success",
-      title: "Your message has been sent successfully",
-      showConfirmButton: true,
-      timer: 1500,
-    }).then(() => {
-      form.reset();
-      document.getElementById("my_modal_5").close();
+
+    await sendContactForm(data).then((res) => {
+      console.log(res);
+      if (res.status === 200) {
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Your message has been sent successfully",
+          showConfirmButton: true,
+          timer: 1500,
+        }).then(() => {
+          form.reset();
+          document.getElementById("my_modal_5").close();
+        });
+      }
     });
   };
 
@@ -49,16 +57,26 @@ const useModalForContact = () => {
                   type="text"
                   name="name"
                   placeholder="Your Name"
+                  required
                   className="p-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg"
                 />
                 <input
                   type="email"
                   placeholder="Your Email"
                   name="email"
+                  required
+                  className="p-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg"
+                />
+                <input
+                  type="text"
+                  placeholder="Subject"
+                  name="subject"
+                  required
                   className="p-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg"
                 />
                 <textarea
                   name="message"
+                  required
                   placeholder="Your Message"
                   className="p-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg"
                 ></textarea>
