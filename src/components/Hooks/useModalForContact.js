@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import "@/styles/Modal.module.css";
 import toast, { Toaster } from "react-hot-toast";
-import Swal from "sweetalert2";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { MdOutlineAddIcCall } from "react-icons/md";
 import { sendContactForm } from "../../../lib/api";
@@ -22,10 +21,9 @@ const useModalForContact = () => {
       subject: formData.get("subject"),
       message: formData.get("message"),
     };
-    // console.log(data);
 
     await sendContactForm(data).then((res) => {
-      console.log(res);
+      // console.log(res);
       if (res.status === 200) {
         toast.success("Message sent successfully.", {
           style: {
