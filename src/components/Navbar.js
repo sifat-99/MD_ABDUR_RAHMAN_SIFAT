@@ -139,7 +139,7 @@ function Navbar() {
           </motion.a>
           <div
             onClick={() => setMode(mode === "light" ? "dark" : "light")}
-            className="ml-6 flex items-center text-4xl rounded-full justify-center "
+            className="ml-6 flex items-center text-4xl rounded-full justify-center cursor-pointer transition-all"
           >
             {mode === "dark" ? (
               <svg
@@ -465,7 +465,7 @@ function Navbar() {
             </motion.a>
             <div
               onClick={() => setMode(mode === "light" ? "dark" : "light")}
-              className="ml-6 flex items-center text-4xl rounded-full justify-center "
+              className="ml-6 flex items-center text-4xl rounded-full justify-center cursor-pointer transition-all"
             >
               {mode === "dark" ? (
                 <svg

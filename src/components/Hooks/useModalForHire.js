@@ -8,7 +8,7 @@ import { MdOutlineAddIcCall } from "react-icons/md";
 import { sendContactForm } from "../../../lib/api";
 import Spinner from "../Spinner";
 
-const useModalForContact = () => {
+const useModalForHire = () => {
   const [loading, setLoading] = useState(false);
 
   const handleContact = async (e) => {
@@ -48,10 +48,10 @@ const useModalForContact = () => {
     <>
       <Toaster />
       <button
-        className="ml-4 bg-dark flex gap-2 items-center p-2.5 text-light px-5 rounded-lg text-lg font-semibold hover:bg-light hover:text-dark transition-all border-2 border-solid border-transparent hover:border-dark dark:bg-light dark:text-dark hover:dark:bg-dark hover:dark:text-light hover:dark:border-light md:p-2 md:px-4 md:text-base"
+        // className=" bg-dark flex gap-2 items-center p-2.5 text-light px-5 rounded-lg text-lg font-semibold hover:bg-light hover:text-dark transition-all border-2 border-solid border-transparent hover:border-dark dark:bg-light dark:text-dark hover:dark:bg-dark hover:dark:text-light hover:dark:border-light md:p-2 md:px-4 md:text-base"
         onClick={() => document.getElementById("my_modal_5").showModal()}
       >
-        Contact <MdOutlineAddIcCall />
+        Hire 
       </button>
       <dialog id="my_modal_5" className="rounded-lg w-96">
         <div className="flex items-center justify-center  bg-gradient-to-r from-[#b9b4e9] via-[#b191f1] to-[#f1a5fd] dark:bg-gradient-to-r dark:from-[#191919] dark:via-[#040304] dark:to-[#000000] ">
@@ -116,4 +116,4 @@ const useModalForContact = () => {
   );
 };
 
-export default useModalForContact;
+export default useModalForHire;
