@@ -24,5 +24,19 @@
     "live_link": "https://bookwarp.vercel.app/",
     "server_link": "https://github.com/dronatoo21/bookwarp-server",
     "technology_used": "React, Next.js, TypeScript, Tailwind CSS, Firebase, Node, Express, MongoDB, Nodemailer"
+  },
+  {
+    "title": "Relux Pacific",
+    "images": [
+      "https://i.ibb.co/2PY6vz9/Clean-Shot-2024-04-12-at-10-09-38.png",
+      "https://i.ibb.co/xJmB3Kr/Clean-Shot-2024-04-12-at-10-09-53.png",
+      "https://i.ibb.co/Df9fYhZ/Clean-Shot-2024-04-12-at-10-10-25.png"
+    ],
+
+    "description": "Relux Pacific Hotel is a website designed to provide users with easy access to room details, booking functionality, and subscription services. Users can navigate room categories to view details and book rooms for their preferred dates. The Booking section allows users to manage their bookings, including cancellation and availability status. Additionally, users can subscribe to receive notifications about news and special offers on available rooms. The technology stack includes React, React Router, React Vite, Material UI, Tailwind CSS, Firebase, MongoDB, Axios JS, and CRUD Operations, ensuring a smooth user experience and efficient data management.",
+    "github_link": "https://github.com/sifat-99/Hotel-management-Client-Side",
+    "live_link": "https://assignment-11-0004.web.app/",
+    "server_link": "https://github.com/sifat-99/Hotel-management-ServerSide",
+    "technology_used": "React, React Router, React Vite, Material UI, Tailwind CSS, Firebase, MongoDB, Axios JS, CRUD Operations, HTML"
   }
 ]

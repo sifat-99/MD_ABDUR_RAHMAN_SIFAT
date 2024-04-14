@@ -36,6 +36,7 @@ const handler = async (req, res) => {
           ...mailOptions,
           ...generateEmailContent(data),
           subject: data.subject,
+          replyTo: data.email,
         })
         .then((info) => {
           const Replay = () => {
