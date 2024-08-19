@@ -15,7 +15,9 @@ function Footer() {
       <div className="text-center flex flex-col gap-y-2">
         <h3>{new Date().getFullYear()} &copy; All rights reserved</h3>
 
+        <Link href="https://github.com/sifat-99" target="_blank">
         <span className="underline">Created by Md Abdur Rahman Sifat</span>
+        </Link>
 
         <div className="flex items-center gap-2 justify-center ">
           <motion.a

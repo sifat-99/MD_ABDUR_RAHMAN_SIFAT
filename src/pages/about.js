@@ -8,6 +8,7 @@ import { useInView, useMotionValue, useSpring } from "framer-motion";
 import Skills from "@/components/skills";
 import Experience from "@/components/Experience";
 import TransitionEffects from "@/components/TransitionEffects";
+import { FaDotCircle } from "react-icons/fa";
 
 const AnimatedNumber = ({ value }) => {
   const ref = useRef(null);
@@ -108,8 +109,8 @@ function about() {
                     <span className="font-bold"> +8801521788920</span>
                   </p>
 
-                  <p className="font-medium text-dark dark:text-light text-nowrap">
-                    <span className="font-semibold">Freelance:</span>Available
+                  <p className="font-medium text-dark dark:text-light text-nowrap flex  justify-start items-center gap-2">
+                    <span className="font-semibold">Freelance:</span> <span className="text-green-300 font-bold text-xl flex justify-center items-center gap-2">Available <FaDotCircle className="inline-block text-green-300" /></span> 
                   </p>
 
                   <p className="font-medium text-dark dark:text-light text-nowrap">

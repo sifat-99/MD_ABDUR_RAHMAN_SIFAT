@@ -80,7 +80,7 @@ function Project({
     autoplaySpeed: 3000,
   };
   return (
-    <article className="relative w-full h-full rounded-2xl border bg-transparent p-6 border-dark dark:bg-transparent dark:border-light xs:p-4 flex flex-col">
+    <article className="relative w-full h-full rounded-2xl border bg-transparent p-6 border-dark dark:bg-transparent dark:border-light xs:p-4 flex flex-col mb-4">
       <div className="flex-grow">
         <Slider {...settings}>
           {img.map((image, index) => (
@@ -91,7 +91,7 @@ function Project({
                   alt="img"
                   width={100}
                   height={100}
-                  className="w-full h-full"
+                  className="w-full h-full rounded-lg"
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 1.2 }}
                   priority

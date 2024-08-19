@@ -2,13 +2,13 @@ const Spinner = () => {
     return (
       <button
         type="button"
-        class="w-full flex justify-center items-center  bg-purple-400 hover:bg-purple-500 focus:bg-indigo-400 text-white font-semibold rounded-lg px-4 py-3 mt-6"
+        className="w-full flex justify-center items-center  bg-purple-400 hover:bg-purple-500 focus:bg-indigo-400 text-white font-semibold rounded-lg px-4 py-3 mt-6"
       >
         <svg
           width="20"
           height="20"
           fill="currentColor"
-          class="mr-2 animate-spin"
+          className="mr-2 animate-spin"
           viewBox="0 0 1792 1792"
           xmlns="http://www.w3.org/2000/svg"
         >
