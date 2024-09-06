@@ -19,6 +19,8 @@ const CustomLink = ({ href, title, className = "" }) => {
     <Link
       href={href}
       className={`${className} relative group-hover:w-full dark:text-light`}
+      target="_blank"
+      rel="noopener noreferrer"
     >
       {title}{" "}
       <span
@@ -43,6 +45,8 @@ const CustomMobileLink = ({ href, title, className = "", toggle }) => {
       onClick={handleMobileClick}
       href={href}
       className={`${className} relative group-hover:w-full my-2 text-light dark:text-dark `}
+      target="_blank"
+      rel="noopener noreferrer"
     >
       {title}{" "}
       <span
@@ -88,7 +92,11 @@ function Navbar() {
           <CustomLink href="/" title="Home" className="" />
           <CustomLink href="/about" title="About" className="mx-4" />
           <CustomLink href="/projects" title="Projects" className="mx-4" />
-          {/* <CustomLink href="/articles" title="articles" className="ml-4" /> */}
+          <CustomLink
+            href="/Sifat.pdf"
+            title="Resume"
+            className="ml-4"
+          />
         </nav>
 
         <nav className="flex dark:text-primaryDark  flex-wrap items-center">
@@ -409,12 +417,12 @@ function Navbar() {
               className=""
               toggle={handleClick}
             />
-            {/* <CustomMobileLink
-              href="/articles"
-              title="articles"
+            <CustomMobileLink
+              href="/Sifat.pdf"
+              title="Resume"
               className=""
               toggle={handleClick}
-            /> */}
+            />
           </nav>
 
           <nav className="flex mt-2 flex-wrap text-primaryDark dark:text-dark items-center">
