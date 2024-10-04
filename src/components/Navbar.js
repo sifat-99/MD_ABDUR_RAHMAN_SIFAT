@@ -19,8 +19,7 @@ const CustomLink = ({ href, title, className = "" }) => {
     <Link
       href={href}
       className={`${className} relative group-hover:w-full dark:text-light`}
-      target="_blank"
-      rel="noopener noreferrer"
+      
     >
       {title}{" "}
       <span
