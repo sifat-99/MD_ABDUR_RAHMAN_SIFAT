@@ -6,6 +6,7 @@ import { IoCloseCircleOutline } from "react-icons/io5";
 import { MdOutlineAddIcCall } from "react-icons/md";
 import { sendContactForm } from "../../../lib/api";
 import dynamic from 'next/dynamic';
+import Swal from "sweetalert2";
 
 const DynamicSpinner = dynamic(() => import('../Spinner'), {
   ssr: false,
@@ -40,6 +41,15 @@ const useModalForContact = () => {
           },
         });
         setLoading(false);
+        Swal.fire({
+            title: "Success!",
+            text: "Your message has been sent successfully.",
+            icon: "success",
+            confirmButtonText: "OK",
+            customClass: {
+                confirmButton: "bg-purple-500 text-white font-bold rounded-lg px-4 py-2 transition-colors hover:bg-purple-700",
+            },
+        });
         form.reset();
         document.getElementById("my_modal_5").close();
       }
@@ -99,7 +109,7 @@ const useModalForContact = () => {
                     Send Message
                   </button>
                 ) : (
-                  <DynamicSpinner /> 
+                  <DynamicSpinner />
                 )}
               </form>
             </div>
