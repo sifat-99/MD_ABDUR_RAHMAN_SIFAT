@@ -5,7 +5,11 @@ import toast, { Toaster } from "react-hot-toast";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import { MdOutlineAddIcCall } from "react-icons/md";
 import { sendContactForm } from "../../../lib/api";
-import Spinner from "../Spinner";
+import dynamic from 'next/dynamic';
+
+const DynamicSpinner = dynamic(() => import('../Spinner'), {
+  ssr: false,
+});
 
 const useModalForContact = () => {
   const [loading, setLoading] = useState(false);
@@ -95,7 +99,7 @@ const useModalForContact = () => {
                     Send Message
                   </button>
                 ) : (
-                  <Spinner /> 
+                  <DynamicSpinner /> 
                 )}
               </form>
             </div>

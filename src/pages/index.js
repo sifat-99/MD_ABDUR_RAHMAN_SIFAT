@@ -6,7 +6,11 @@ import Link from "next/link";
 import { FaArrowUpRightFromSquare } from "react-icons/fa6";
 import HireMe from "@/components/HireMe";
 import TransitionEffects from "@/components/TransitionEffects";
-import Lottie from "lottie-react";
+import dynamic from 'next/dynamic';
+
+const DynamicLottie = dynamic(() => import('lottie-react'), {
+  ssr: false,
+});
 import useModalForContact from "@/components/Hooks/useModalForContact";
 import Skills from "@/components/skills";
 import SkillSet from "@/components/SkillAnimation";
@@ -26,7 +30,7 @@ export default function Home() {
         <Layout className="pt-0 mb-10 bg-transparent dark:bg-transparent">
           <div className="flex items-center justify-between gap-6 w-full lg:flex-col">
             <div className="w-1/2 md:w-full">
-              <Lottie
+              <DynamicLottie
                 className="w-full h-auto lg:hidden md:inline-block md:w-full"
                 animationData={profilePic}
               />

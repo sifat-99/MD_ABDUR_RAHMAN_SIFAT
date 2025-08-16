@@ -8,10 +8,24 @@
       "https://i.ibb.co/8g8BmHF/Clean-Shot-2024-08-20-at-02-46-26-2x.png"
     ],
     "description": "Kishorgonj Keshba Fazil Madrasah, established in 1973 in Kishoreganj, Nilphaari, Bangladesh, is a respected institution that offers a comprehensive education combining Islamic teachings with general studies. The madrasha is committed to fostering both the spiritual and academic growth of its students, guided by a team of experienced teachers. It regularly engages with the community through various events, such as the recent teacher's meeting. For more information, you can visit their official website or contact them directly at +8801794803612.",
-    "github_link": "https://github.com/sifat-99/kiskfm",
-    "live_link": "https://kiskfm.vercel.app/",
-    "server_link": "https://github.com/sifat-99/kiskfm",
-    "technology_used": "React, Next.js, javascript, Tailwind CSS, MongoDB, Node.js, Express.js, Google Analytics, JWT, Mongoose, Material-tailwind"
+    "github_link": "https://github.com/sifat-99/Kishorgonj_Keshba_Fazil_Madrasha.git",
+    "live_link": "https://www.kiskfmnil.edu.bd/",
+    "server_link": "https://github.com/sifat-99/Kishorgonj_Keshba_Fazil_Madrasha.git",
+    "technology_used": "React, Next.js, TypeScript, Tailwind CSS, MongoDB, Node.js, Express.js, Google Analytics, JWT, Mongoose, Material-tailwind"
+  },
+  {
+    "title": "Singergari Jahuria Sharif High School",
+    "images": [
+      "https://i.ibb.co.com/S885V1w/Shot-2025-08-16-at-10-55-53-2x.png",
+      "https://i.ibb.co.com/JwYMxdVp/Shot-2025-08-16-at-10-59-13-2x.png",
+      "https://i.ibb.co.com/j977Ljqq/Shot-2025-08-16-at-11-01-21-2x.png",
+      "https://i.ibb.co.com/k2DKZsrV/Shot-2025-08-16-at-11-02-28-2x.png"
+    ],
+    "description": "Singergari Jahuria Sharif High School, established in 1966 in Kishoreganj, Nilphaari, Bangladesh, is a respected institution that offers a comprehensive education combining general studies. The School is committed to fostering both the spiritual and academic growth of its students, guided by a team of experienced teachers. It regularly engages with the community through various events, such as the recent teacher's meeting. For more information, you can visit their official website or contact them directly at +8801718140077.",
+    "github_link": "https://github.com/sifat-99/johuriashsnil.edu.git",
+    "live_link": "https://www.johuriashsnil.edu.bd/",
+    "server_link": "https://github.com/sifat-99/johuriashsnil.edu.git",
+    "technology_used": "React, Next.js, TypeScript, Tailwind CSS, MongoDB, Node.js, Express.js, Google Analytics, JWT, Mongoose, Material-tailwind"
   },
   {
     "title": "Meet Ready",
