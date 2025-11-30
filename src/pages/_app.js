@@ -4,63 +4,65 @@ import Navbar from "@/components/Navbar";
 import "@/styles/globals.css";
 import { AnimatePresence } from "framer-motion";
 import {
-  Montserrat,
-  Josefin_Sans,
-  Inter,
-  JetBrains_Mono,
-  Lora,
-  Fira_Code,
+    Montserrat,
+    Josefin_Sans,
+    Inter,
+    JetBrains_Mono,
+    Lora,
+    Fira_Code,
 } from "next/font/google";
 import Head from "next/head";
+import Script from "next/script";
 import { useRouter } from "next/router";
 
 const montSerrat = Montserrat({
-  subsets: ["cyrillic"],
-  weights: [400, 500, 600, 700],
+    subsets: ["cyrillic"],
+    weights: [400, 500, 600, 700],
 });
 
 const josefinSans = Josefin_Sans({
-  subsets: ["vietnamese"],
-  weights: [400, 500, 600, 700],
+    subsets: ["vietnamese"],
+    weights: [400, 500, 600, 700],
 });
 
 export const poppins = Fira_Code({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+    subsets: ["latin"],
+    weight: ["300", "400", "500", "600", "700"],
 });
 const lora = Lora({
-  subsets: ["latin"],
-  weights: [400, 500, 600, 700],
+    subsets: ["latin"],
+    weights: [400, 500, 600, 700],
 });
 
 export default function App({ Component, pageProps }) {
-  const router = useRouter();
-  return (
-    <>
-      <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/Sifat.svg" />
-        <script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-RD0TN8SP2K"
-        ></script>
-        <script>
-          {`window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-RD0TN8SP2K');`}
-        </script>
-      </Head>
-      <main
-        className={`${lora.className}  bg-gradient-to-r from-[#b9b4e9] via-[#b191f1] to-[#f1a5fd] dark:bg-gradient-to-r dark:from-[#191919] dark:via-[#040304] dark:to-[#000000] w-full min-h-screen`}
-      >
-        <Navbar />
-        <AnimatePresence mode="wait">
-          <Component key={router.asPath} {...pageProps} />
-        </AnimatePresence>
-        <Footer />
-      </main>
-    </>
-  );
+    const router = useRouter();
+    return (
+        <>
+            <Head>
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <link rel="icon" href="/Sifat.svg" />
+            </Head>
+            <Script
+                strategy="afterInteractive"
+                src="https://www.googletagmanager.com/gtag/js?id=G-RD0TN8SP2K"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+                {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-RD0TN8SP2K');
+        `}
+            </Script>
+            <main
+                className={`${lora.className} bg-gradient-to-r from-[#b9b4e9] via-[#b191f1] to-[#f1a5fd] dark:bg-gradient-to-r dark:from-[#191919] dark:via-[#040304] dark:to-[#000000] w-full min-h-screen animate-gradient bg-[length:400%_400%]`}
+            >
+                <Navbar />
+                <AnimatePresence mode="wait">
+                    <Component key={router.asPath} {...pageProps} />
+                </AnimatePresence>
+                <Footer />
+            </main>
+        </>
+    );
 }
