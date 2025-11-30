@@ -4,31 +4,13 @@ import Navbar from "@/components/Navbar";
 import "@/styles/globals.css";
 import { AnimatePresence } from "framer-motion";
 import {
-    Montserrat,
-    Josefin_Sans,
-    Inter,
-    JetBrains_Mono,
     Lora,
-    Fira_Code,
 } from "next/font/google";
 import Head from "next/head";
 import Script from "next/script";
 import { useRouter } from "next/router";
 
-const montSerrat = Montserrat({
-    subsets: ["cyrillic"],
-    weights: [400, 500, 600, 700],
-});
 
-const josefinSans = Josefin_Sans({
-    subsets: ["vietnamese"],
-    weights: [400, 500, 600, 700],
-});
-
-export const poppins = Fira_Code({
-    subsets: ["latin"],
-    weight: ["300", "400", "500", "600", "700"],
-});
 const lora = Lora({
     subsets: ["latin"],
     weights: [400, 500, 600, 700],
