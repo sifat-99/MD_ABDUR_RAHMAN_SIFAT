@@ -40,7 +40,7 @@ function useDarkTheme() {
 
     }
    }, [mode]);
-   return [mode,setMode]
+   return [mode, setMode] as const;
   // return <div></div>;
 }
 

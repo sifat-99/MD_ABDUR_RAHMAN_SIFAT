@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
-import { useRouter } from "next/router";
+import { usePathname, useRouter } from "next/navigation";
 import {
     FaFacebook,
     FaGithub,
@@ -11,9 +11,12 @@ import {
 import { motion } from "framer-motion";
 import useDarkTheme from "./Hooks/useDarkTheme";
 import { useState } from "react";
+const MotionLink = motion.a as any;
+const MotionDiv = motion.div as any;
 
-const CustomLink = ({ href, title, className = "" }) => {
+const CustomLink = ({ href, title, className = "" }: { href: string; title: string; className?: string }) => {
     const router = useRouter();
+    const pathname = usePathname();
     // console.log(router);
     return (
         <Link
@@ -23,7 +26,7 @@ const CustomLink = ({ href, title, className = "" }) => {
         >
             {title}{" "}
             <span
-                className={`h-[2px] inline-block dark:bg-light w-0 transition-[width] ease duration-300 bg-black left-0 -bottom-0.5 absolute group-hover:w-full ${router.asPath === href ? "w-full" : "w-0"
+                className={`h-[2px] inline-block dark:bg-light w-0 transition-[width] ease duration-300 bg-black left-0 -bottom-0.5 absolute group-hover:w-full ${pathname === href ? "w-full" : "w-0"
                     }`}
             >
                 &nbsp;
@@ -31,8 +34,9 @@ const CustomLink = ({ href, title, className = "" }) => {
         </Link>
     );
 };
-const CustomMobileLink = ({ href, title, className = "", toggle }) => {
+const CustomMobileLink = ({ href, title, className = "", toggle }: { href: string; title: string; className?: string; toggle: () => void }) => {
     const router = useRouter();
+    const pathname = usePathname();
     const handleMobileClick = function () {
         toggle();
         router.push(href);
@@ -41,14 +45,11 @@ const CustomMobileLink = ({ href, title, className = "", toggle }) => {
     return (
         <button
             onClick={handleMobileClick}
-            href={href}
             className={`${className} relative group-hover:w-full my-2 text-light dark:text-dark `}
-            target="_blank"
-            rel="noopener noreferrer"
         >
             {title}{" "}
             <span
-                className={`h-[2px] inline-block dark:bg-dark bg-light w-0 transition-[width] ease duration-300  left-0 -bottom-0.5 absolute group-hover:w-full ${router.asPath === href ? "w-full" : "w-0"
+                className={`h-[2px] inline-block dark:bg-dark bg-light w-0 transition-[width] ease duration-300  left-0 -bottom-0.5 absolute group-hover:w-full ${pathname === href ? "w-full" : "w-0"
                     }`}
             >
                 &nbsp;
@@ -95,7 +96,7 @@ function Navbar() {
                 </nav>
 
                 <nav className="flex dark:text-primaryDark  flex-wrap items-center">
-                    <motion.a
+                    <MotionLink
                         href="https://twitter.com/md_sifat_99"
                         target={"_blank"}
                         whileHover={{ y: -2 }}
@@ -103,8 +104,8 @@ function Navbar() {
                         className=" mr-3 text-3xl"
                     >
                         <FaTwitter />
-                    </motion.a>
-                    <motion.a
+                    </MotionLink>
+                    <MotionLink
                         href="https://www.instagram.com/abdur_rahman_sifat_khan/"
                         target={"_blank"}
                         className=" mx-3  text-3xl"
@@ -112,8 +113,8 @@ function Navbar() {
                         whileTap={{ scale: 0.5 }}
                     >
                         <FaInstagram />
-                    </motion.a>
-                    <motion.a
+                    </MotionLink>
+                    <MotionLink
                         href="https://www.facebook.com/profile.php?id=100070987320961"
                         target={"_blank"}
                         className=" mx-3  text-3xl"
@@ -121,8 +122,8 @@ function Navbar() {
                         whileTap={{ scale: 0.5 }}
                     >
                         <FaFacebook />
-                    </motion.a>
-                    <motion.a
+                    </MotionLink>
+                    <MotionLink
                         href="https://www.linkedin.com/in/sifatmollah/"
                         target={"_blank"}
                         className=" ml-3  text-3xl"
@@ -130,8 +131,8 @@ function Navbar() {
                         whileTap={{ scale: 0.5 }}
                     >
                         <FaLinkedinIn />
-                    </motion.a>
-                    <motion.a
+                    </MotionLink>
+                    <MotionLink
                         href="https://github.com/sifat-99"
                         target={"_blank"}
                         className=" ml-4  text-3xl"
@@ -139,7 +140,7 @@ function Navbar() {
                         whileTap={{ scale: 0.5 }}
                     >
                         <FaGithub />
-                    </motion.a>
+                    </MotionLink>
                     <div
                         onClick={() => setMode(mode === "light" ? "dark" : "light")}
                         className="ml-6 flex items-center text-4xl rounded-full justify-center cursor-pointer transition-all"
@@ -388,7 +389,7 @@ function Navbar() {
             </div>
 
             {isOpen && (
-                <motion.div
+                <MotionDiv
                     initial={{ scale: 0, opacity: 0, x: "-50%", y: "-50%" }}
                     animate={{ scale: 1, opacity: 1 }}
                     className="min-w-[70vw] flex flex-col items-center justify-between z-10 bg-dark dark:bg-light/75 backdrop-blur-md rounded-lg py-32 fixed top-1/2 -translate-x-1/2 -translate-y-1/2 left-1/2"
@@ -426,8 +427,8 @@ function Navbar() {
                         />
                     </nav>
 
-                    <nav className="flex mt-2 flex-wrap text-primaryDark dark:text-dark items-center">
-                        <motion.a
+                    <nav className="flex mt-2 gap-3 flex-wrap text-primaryDark dark:text-dark items-center justify-center">
+                        <MotionLink
                             href="https://twitter.com/md_sifat_99"
                             target={"_blank"}
                             whileHover={{ y: -2 }}
@@ -435,8 +436,8 @@ function Navbar() {
                             className=" mr-3 text-3xl"
                         >
                             <FaTwitter />
-                        </motion.a>
-                        <motion.a
+                        </MotionLink>
+                        <MotionLink
                             href="https://www.instagram.com/abdur_rahman_sifat_khan/"
                             target={"_blank"}
                             className=" mx-3  text-3xl"
@@ -444,8 +445,8 @@ function Navbar() {
                             whileTap={{ scale: 0.5 }}
                         >
                             <FaInstagram />
-                        </motion.a>
-                        <motion.a
+                        </MotionLink>
+                        <MotionLink
                             href="https://www.facebook.com/profile.php?id=100070987320961"
                             target={"_blank"}
                             className=" mx-3  text-3xl"
@@ -453,8 +454,8 @@ function Navbar() {
                             whileTap={{ scale: 0.5 }}
                         >
                             <FaFacebook />
-                        </motion.a>
-                        <motion.a
+                        </MotionLink>
+                        <MotionLink
                             href="https://www.linkedin.com/in/sifatmollah/"
                             target={"_blank"}
                             className=" ml-3  text-3xl"
@@ -462,8 +463,8 @@ function Navbar() {
                             whileTap={{ scale: 0.5 }}
                         >
                             <FaLinkedinIn />
-                        </motion.a>
-                        <motion.a
+                        </MotionLink>
+                        <MotionLink
                             href="https://github.com/sifat-99"
                             target={"_blank"}
                             className=" ml-3  text-3xl"
@@ -471,7 +472,7 @@ function Navbar() {
                             whileTap={{ scale: 0.5 }}
                         >
                             <FaGithub />
-                        </motion.a>
+                        </MotionLink>
                         <div
                             onClick={() => setMode(mode === "light" ? "dark" : "light")}
                             className="ml-6 flex items-center text-4xl rounded-full justify-center cursor-pointer transition-all"
@@ -717,7 +718,7 @@ function Navbar() {
                             )}
                         </div>
                     </nav>
-                </motion.div>
+                </MotionDiv>
             )}
             <div className="absolute left-[50%] top-2 translate-x-[-50%]">
                 <Logo />

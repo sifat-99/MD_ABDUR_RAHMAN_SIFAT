@@ -1,31 +1,28 @@
-import Head from "next/head";
+"use client";
 import Layout from "@/components/Layout";
-import profilePic from "/public/Dev.json";
+import profilePic from "../../public/Dev.json";
 import AnimatedText from "@/components/AnimatedText";
 import Link from "next/link";
 import { FaArrowUpRightFromSquare } from "react-icons/fa6";
 import HireMe from "@/components/HireMe";
 import TransitionEffects from "@/components/TransitionEffects";
 import dynamic from 'next/dynamic';
-
-const DynamicLottie = dynamic(() => import('lottie-react'), {
-    ssr: false,
-});
 import { motion } from "framer-motion";
 import SkillSet from "@/components/SkillAnimation";
 import useModalForContact from "@/components/Hooks/useModalForContact";
 
+const DynamicLottie = dynamic(() => import('lottie-react'), {
+    ssr: false,
+});
+
 export default function Home() {
     const contact = useModalForContact();
-    const Name = "MD: ABDUR RAHMAN SIFAT".split(" ");
+    const nameString = "MD: ABDUR RAHMAN SIFAT";
+    const Name = nameString.split(" ");
     return (
         <>
-            <Head>
-                <title>MD: ABDUR RAHMAN SIFAT</title>
-                <meta name="description" content="Created by sifat khan" />
-            </Head>
             <TransitionEffects />
-            <main className="flex items-center   text-dark w-full dark:text-white">
+            <main className="flex items-center text-dark w-full dark:text-white">
                 <Layout className="pt-0 mb-10 bg-transparent dark:bg-transparent">
                     <div className="flex items-center justify-between gap-6 w-full lg:flex-col">
                         <div className="w-1/2 md:w-full">

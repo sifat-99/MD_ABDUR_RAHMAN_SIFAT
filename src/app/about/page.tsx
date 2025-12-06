@@ -1,8 +1,8 @@
+"use client";
 import AnimatedText from "@/components/AnimatedText";
 import Layout from "@/components/Layout";
-import Head from "next/head";
 import Image from "next/image";
-import profilePic from "../../public/Sifat.png";
+import profilePic from "../../../public/Sifat.png";
 import { useEffect, useRef } from "react";
 import { useInView, useMotionValue, useSpring } from "framer-motion";
 import Skills from "@/components/skills";
@@ -10,8 +10,8 @@ import Experience from "@/components/Experience";
 import TransitionEffects from "@/components/TransitionEffects";
 import { FaDotCircle } from "react-icons/fa";
 
-const AnimatedNumber = ({ value }) => {
-    const ref = useRef(null);
+const AnimatedNumber = ({ value }: { value: number }) => {
+    const ref = useRef<HTMLSpanElement>(null!);
     const motionValue = useMotionValue(0);
     const springValue = useSpring(motionValue, { duration: 3000 });
     const isInView = useInView(ref, { once: true });
@@ -30,13 +30,9 @@ const AnimatedNumber = ({ value }) => {
     return <span ref={ref}></span>;
 };
 
-function about() {
+export default function About() {
     return (
         <>
-            <Head>
-                <title>SIFAT || about page</title>
-                <meta name="description " content="any description" />
-            </Head>
             <TransitionEffects />
             <main>
                 <Layout className="pt-12 bg-transparent dark:bg-transparent">
@@ -104,14 +100,14 @@ function about() {
 
                                 <p className="font-medium text-dark dark:text-light text-nowrap">
                                     <span className="font-semibold">Phone:</span>
-                                    <span className="font-bold ml-2"> +8801521788920</span>
+                                    <span className="font-bold ml-2 font-sans"> +8801521-788920</span>
                                 </p>
 
                                 <p className="font-medium text-dark dark:text-light text-nowrap flex  justify-start items-center gap-2">
                                     <span className="font-semibold">Freelance:</span>{" "}
-                                    <span className="text-green-300 font-bold text-xl flex justify-center items-center gap-2">
+                                    <span className="text-green-600 font-bold text-xl flex justify-center items-center gap-2">
                                         Available{" "}
-                                        <FaDotCircle className="inline-block text-green-300" />
+                                        <FaDotCircle className="inline-block text-green-600" />
                                     </span>
                                 </p>
 
@@ -134,5 +130,3 @@ function about() {
         </>
     );
 }
-
-export default about;

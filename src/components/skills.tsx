@@ -1,8 +1,15 @@
 import { motion } from "framer-motion";
 
-function Skill({ name, x, y }) {
+interface SkillProps {
+    name: string;
+    x: string;
+    y: string;
+}
+
+function Skill({ name, x, y }: SkillProps) {
+    const MotionDiv = motion.div as any;
     return (
-        <motion.div
+        <MotionDiv
             className="flex items-center justify-center rounded-full font-semibold bg-dark text-light py-3 px-6 absolute dark:bg-light dark:text-dark shadow-dark cursor-pointer dark:shadow-white lg:py-2 lg:px-4 md:text-sm md:py-1.5 md:px-3 xs:bg-transparent xs:dark:bg-transparent xs:text-dark xs:dark:text-light xs:font-bold"
             whileHover={{ scale: 1.5 }}
             initial={{ x: 0, y: 0 }}
@@ -10,10 +17,11 @@ function Skill({ name, x, y }) {
             viewport={{ once: true }}
         >
             {name}
-        </motion.div>
+        </MotionDiv>
     );
 }
 function Skills() {
+    const MotionDiv = motion.div as any;
     return (
         <>
             <h2 className="font-bold underline mb-4 text-4xl mt-24 w-full text-center dark:text-light md:text-6xl md:mt-12 ">
@@ -26,12 +34,12 @@ function Skills() {
        sm:bg-circularLightSm sm:dark:bg-circularDarkSm
         "
             >
-                <motion.div
+                <MotionDiv
                     className="flex items-center justify-center rounded-full font-semibold bg-dark text-light py-4 px-4 dark:bg-light dark:text-dark cursor-pointer shadow-dark dark:shadow-white lg:p-6 md:p-4 xs:text-xs xs:p-2"
                     whileHover={{ scale: 1.5 }}
                 >
                     WEB
-                </motion.div>
+                </MotionDiv>
                 <Skill name="HTML" x="-25vw" y="2vw" />
                 <Skill name="CSS" x="-5vw" y="-10vw" />
                 <Skill name="JavaScript" x="20vw" y="6vw" />

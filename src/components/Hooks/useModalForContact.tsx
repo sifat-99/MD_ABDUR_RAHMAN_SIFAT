@@ -15,7 +15,7 @@ const DynamicSpinner = dynamic(() => import('../Spinner'), {
 const useModalForContact = () => {
     const [loading, setLoading] = useState(false);
 
-    const handleContact = async (e) => {
+    const handleContact = async (e: any) => {
         setLoading(true);
         e.preventDefault();
         const form = e.target;
@@ -51,7 +51,7 @@ const useModalForContact = () => {
                     },
                 });
                 form.reset();
-                document.getElementById("my_modal_5").close();
+                (document.getElementById("my_modal_5") as any).close();
             }
         });
     };
@@ -61,7 +61,7 @@ const useModalForContact = () => {
             <Toaster />
             <button
                 className="ml-4 bg-dark flex gap-2 items-center p-2.5 text-light px-5 rounded-lg text-lg font-semibold hover:bg-light hover:text-dark transition-all border-2 border-solid border-transparent hover:border-dark dark:bg-light dark:text-dark hover:dark:bg-dark hover:dark:text-light hover:dark:border-light md:p-2 md:px-4 md:text-base"
-                onClick={() => document.getElementById("my_modal_5").showModal()}
+                onClick={() => (document.getElementById("my_modal_5") as any).showModal()}
             >
                 Contact <MdOutlineAddIcCall />
             </button>
@@ -115,7 +115,7 @@ const useModalForContact = () => {
                         </div>
                         <div className="flex justify-end">
                             <button
-                                onClick={() => document.getElementById("my_modal_5").close()}
+                                onClick={() => (document.getElementById("my_modal_5") as any).close()}
                                 className="absolute top-2 text-xl right-2 text-gray-800 dark:text-white p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-purple-700 hover:text-white transition-all dark:hover:bg-purple-700 dark:hover:text-white dark:hover:bg-opacity-80 dark:bg-opacity-80 hover:bg-opacity-80 bg-opacity-80"
                             >
                                 <IoCloseCircleOutline />

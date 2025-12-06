@@ -2,8 +2,17 @@ import React, { useRef } from "react";
 import { motion, useScroll } from "framer-motion";
 import LiIcon from "./LiIcon";
 
-const Details = ({ position, company, companyLink, time, address, work }) => {
-    const ref = useRef(null);
+interface DetailsProps {
+    position: string;
+    company: string;
+    companyLink: string;
+    time: string;
+    address: string;
+    work: string;
+}
+
+const Details = ({ position, company, companyLink, time, address, work }: DetailsProps) => {
+    const ref = useRef<HTMLLIElement>(null);
     return (
         <li
             ref={ref}
@@ -35,7 +44,7 @@ const Details = ({ position, company, companyLink, time, address, work }) => {
 };
 
 const Experience = () => {
-    const ref = useRef(null);
+    const ref = useRef<HTMLDivElement>(null!);
     const { scrollYProgress } = useScroll({
         target: ref,
         offset: ["start end", "center start"],

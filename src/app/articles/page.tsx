@@ -1,33 +1,37 @@
+"use client";
 import AnimatedText from "@/components/AnimatedText";
 import Layout from "@/components/Layout";
-import Head from "next/head";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 import Link from "next/link";
-import article1 from "../../public/images/articles/pagination component in reactjs.jpg";
-import article2 from "../../public/images/articles/create loading screen in react js.jpg";
-import article3 from "../../public/images/articles/create-modal-component-in-react-using-react-portals.png";
-import article4 from "../../public/images/articles/form-validation-in-reactjs-using-custom-react-hook.png";
-import article5 from "../../public/images/articles/smooth scrolling in reactjs.png";
-import article6 from "../../public/images/articles/todo list app built using react redux and framer motion.png";
+import article1 from "../../../public/images/articles/pagination component in reactjs.jpg";
+import article2 from "../../../public/images/articles/create loading screen in react js.jpg";
+import article3 from "../../../public/images/articles/create-modal-component-in-react-using-react-portals.png";
+import article4 from "../../../public/images/articles/form-validation-in-reactjs-using-custom-react-hook.png";
+import article5 from "../../../public/images/articles/smooth scrolling in reactjs.png";
+import article6 from "../../../public/images/articles/todo list app built using react redux and framer motion.png";
 import { motion, useMotionValue } from "framer-motion";
 import { useRef } from "react";
 import TransitionEffects from "@/components/TransitionEffects";
 
 const FramerImage = motion(Image);
 
-function MovingImg({ title, img, link }) {
-    const ref = useRef(null)
+function MovingImg({ title, img, link }: { title: string, img: StaticImageData, link: string }) {
+    const ref = useRef<HTMLImageElement>(null)
     const x = useMotionValue(0)
     const y = useMotionValue(0)
-    const handleMouse = (e) => {
-        ref.current.style.display = "inline-block"
-        x.set(e.pageX)
-        y.set(-10)
+    const handleMouse = (e: React.MouseEvent) => {
+        if (ref.current) {
+            ref.current.style.display = "inline-block"
+            x.set(e.pageX)
+            y.set(-10)
+        }
     }
-    const handleMouseLeave = (e) => {
-        ref.current.style.display = "none";
-        x.set(0);
-        y.set(0);
+    const handleMouseLeave = (e: React.MouseEvent) => {
+        if (ref.current) {
+            ref.current.style.display = "none";
+            x.set(0);
+            y.set(0);
+        }
     }
     return (
         <Link
@@ -43,7 +47,7 @@ function MovingImg({ title, img, link }) {
                 src={img}
                 alt={title}
                 ref={ref}
-                style={{ x: x, y: y }}
+                style={{ x: x, y: y } as any}
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 className="w-96 z-10 h-auto hidden absolute rounded-lg md:!hidden"
@@ -52,9 +56,10 @@ function MovingImg({ title, img, link }) {
     );
 }
 
-function Article({ img, title, date, link }) {
+function Article({ img, title, date, link }: { img: StaticImageData, title: string, date: string, link: string }) {
+    const MotionLi = motion.li as any;
     return (
-        <motion.li
+        <MotionLi
             initial={{ y: 200 }}
             whileInView={{ y: 0, transition: { duration: 0.5, ease: "easeInOut" } }}
             viewport={{ once: true }}
@@ -64,10 +69,10 @@ function Article({ img, title, date, link }) {
             <span className="text-primary font-semibold pl-4 dark:text-primaryDark sm:self-start sm:pl-0 xs:text-sm">
                 {date}
             </span>
-        </motion.li>
+        </MotionLi>
     );
 }
-function FeaturedArticles({ img, title, link, time, summary }) {
+function FeaturedArticles({ img, title, link, time, summary }: { img: StaticImageData, title: string, link: string, time: string, summary: string }) {
     return (
         <li className="relative col-span-1 w-full p-4 bg-light dark:bg-dark border-solid border-dark border rounded-2xl">
             <div className="absolute top-0 -right-3 -z-10 w-[102%] h-[103%] bg-dark rounded-[2rem] rounded-br-3xl dark:bg-light" />
@@ -99,13 +104,9 @@ function FeaturedArticles({ img, title, link, time, summary }) {
     );
 }
 
-function articles() {
+export default function Articles() {
     return (
         <>
-            <Head>
-                <title>williams||articles page</title>
-                <meta name="description " content="any description" />
-            </Head>
             <TransitionEffects />
             <main className="w-full flex items-center dark:text-light flex-col justify-center overflow-hidden ">
                 <Layout>
@@ -168,5 +169,3 @@ Follow this step-by-step guide to integrate Pagination component in your ReactJS
         </>
     );
 }
-
-export default articles;
