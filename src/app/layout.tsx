@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import '@/styles/globals.css'
 import Script from 'next/script'
 import TransitionProvider from '@/components/TransitionProvider'
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
     title: 'MD: ABDUR RAHMAN SIFAT',
@@ -44,6 +45,7 @@ export default function RootLayout({
                 </Script>
                 <TransitionProvider>
                     {children}
+                    <Analytics />
                 </TransitionProvider>
             </body>
         </html>
