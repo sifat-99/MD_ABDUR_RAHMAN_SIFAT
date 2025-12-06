@@ -6,7 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
     title: 'MD: ABDUR RAHMAN SIFAT',
-    description: 'Created by sifat khan',
+    description: 'Created with 💜 by sifat khan',
     icons: {
         icon: '/Sifat.svg',
     },
