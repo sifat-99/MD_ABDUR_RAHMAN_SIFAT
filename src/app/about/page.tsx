@@ -22,7 +22,7 @@ const AnimatedNumber = ({ value }: { value: number }) => {
     }, [isInView, motionValue, value]);
     useEffect(() => {
         springValue.on("change", (latest) => {
-            if (ref.current && latest.toFixed() <= value) {
+            if (ref.current && parseFloat(latest.toFixed()) <= value) {
                 ref.current.textContent = latest.toFixed(0);
             }
         });
