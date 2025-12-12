@@ -5,10 +5,24 @@ import TransitionProvider from '@/components/TransitionProvider'
 import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
+    metadataBase: new URL('https://www.sifat.online'),
     title: 'MD: ABDUR RAHMAN SIFAT',
     description: 'Created with 💜 by sifat khan',
     icons: {
         icon: '/Sifat.svg',
+    },
+    openGraph: {
+        title: 'MD: ABDUR RAHMAN SIFAT',
+        description: 'Created with 💜 by sifat khan',
+        siteName: 'MD: ABDUR RAHMAN SIFAT',
+        images: [
+            {
+                url: '/opengraph-image.png',
+                width: 1200,
+                height: 630,
+                alt: 'MD: ABDUR RAHMAN SIFAT',
+            },
+        ],
     },
 }
 
