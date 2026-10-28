@@ -1,5 +1,7 @@
 "use server";
 
+import { cache } from "react";
+import { revalidatePath } from "next/cache";
 import { connectToDatabase } from "./mongodb";
 import {
   MongoProfile,
@@ -61,12 +63,20 @@ function getRtdbEndpoint(path: string): string {
   return RTDB_SECRET ? `${base}?auth=${RTDB_SECRET}` : base;
 }
 
+function revalidatePortfolioCache() {
+  try {
+    revalidatePath("/", "layout");
+  } catch {
+    // Graceful fallback if called outside request context
+  }
+}
+
 async function fbGet<T>(path: string): Promise<T | null> {
   const url = getRtdbEndpoint(path);
   if (!url) return null;
   try {
     const res = await fetch(url, {
-      cache: "no-store",
+      next: { revalidate: 300, tags: ["portfolio"] },
       headers: { "Content-Type": "application/json" },
     });
     if (!res.ok) {
@@ -98,6 +108,7 @@ async function fbSet<T>(path: string, data: T): Promise<boolean> {
       }
       return false;
     }
+    revalidatePortfolioCache();
     return true;
   } catch (err) {
     console.error(`[Firebase RTDB] Network error on PUT /${path}:`, err);
@@ -114,6 +125,9 @@ async function fbUpdate<T>(path: string, updates: T): Promise<boolean> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
     });
+    if (res.ok) {
+      revalidatePortfolioCache();
+    }
     return res.ok;
   } catch {
     return false;
@@ -127,6 +141,9 @@ async function fbRemove(path: string): Promise<boolean> {
     const res = await fetch(url, {
       method: "DELETE",
     });
+    if (res.ok) {
+      revalidatePortfolioCache();
+    }
     return res.ok;
   } catch {
     return false;

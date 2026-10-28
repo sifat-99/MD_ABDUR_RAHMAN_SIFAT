@@ -1,7 +1,11 @@
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import WorldMapDemo from "@/components/world-map-demo";
 import { getProfile } from "@/lib/db-service";
 import { ContactForm } from "./ContactForm";
+
+const WorldMapDemo = dynamic(() => import("@/components/world-map-demo"), {
+    loading: () => <div className="w-full h-48 animate-pulse bg-muted/10 rounded-xl" />,
+});
 
 export async function ContactSection() {
     const profile = await getProfile();
@@ -95,6 +99,7 @@ export async function ContactSection() {
                                                 href={profile.socialLinks.github}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                aria-label="GitHub Profile"
                                                 className="px-3 py-1.5 @md/info:px-4 @md/info:py-2 rounded-lg border hover:bg-accent transition-colors text-xs @md/info:text-sm"
                                             >
                                                 GitHub
@@ -105,6 +110,7 @@ export async function ContactSection() {
                                                 href={profile.socialLinks.linkedin}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                aria-label="LinkedIn Profile"
                                                 className="px-3 py-1.5 @md/info:px-4 @md/info:py-2 rounded-lg border hover:bg-accent transition-colors text-xs @md/info:text-sm"
                                             >
                                                 LinkedIn
@@ -115,6 +121,7 @@ export async function ContactSection() {
                                                 href={profile.socialLinks.twitter}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                aria-label="Twitter Profile"
                                                 className="px-3 py-1.5 @md/info:px-4 @md/info:py-2 rounded-lg border hover:bg-accent transition-colors text-xs @md/info:text-sm"
                                             >
                                                 Twitter
@@ -125,6 +132,7 @@ export async function ContactSection() {
                                                 href={profile.socialLinks.website}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
+                                                aria-label="Personal Website"
                                                 className="px-3 py-1.5 @md/info:px-4 @md/info:py-2 rounded-lg border hover:bg-accent transition-colors text-xs @md/info:text-sm"
                                             >
                                                 Website

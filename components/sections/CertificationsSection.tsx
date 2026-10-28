@@ -81,9 +81,9 @@ export async function CertificationsSection() {
 
                                         {/* Certificate Header */}
                                         <div className="mb-2">
-                                            <h4 className="text-xs sm:text-sm font-bold text-yellow-500/90 uppercase tracking-widest">
+                                            <p className="text-xs sm:text-sm font-bold text-yellow-500/90 uppercase tracking-widest">
                                                 CERTIFICATE
-                                            </h4>
+                                            </p>
                                             <p className="text-[10px] text-yellow-500/80 italic font-serif">for</p>
                                         </div>
 

@@ -469,7 +469,12 @@ function DockIcon({
     "group relative flex items-center justify-center w-12 h-12 md:w-12 md:h-12 cursor-pointer";
 
   return item.onClick ? (
-    <button type="button" onClick={handleClick} className={wrapperClasses}>
+    <button
+      type="button"
+      onClick={handleClick}
+      className={wrapperClasses}
+      aria-label={item.title}
+    >
       {content}
     </button>
   ) : (
@@ -480,6 +485,7 @@ function DockIcon({
       className={wrapperClasses}
       scroll={false}
       onClick={handleLinkClick}
+      aria-label={item.title}
     >
       {content}
     </Link>

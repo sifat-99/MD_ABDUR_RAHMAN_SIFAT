@@ -13,8 +13,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getSiteSettings, getProfile } from "@/lib/db-service";
 import { generateThemeCss, getFontSchemeById } from "@/lib/theme-presets";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

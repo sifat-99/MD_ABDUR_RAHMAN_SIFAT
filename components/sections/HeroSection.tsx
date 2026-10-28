@@ -17,8 +17,13 @@ export async function HeroSection() {
       id="home"
       className="relative min-h-[85vh] lg:min-h-screen flex items-center justify-center pt-20 pb-8 sm:pt-24 sm:pb-10 lg:pt-6 lg:pb-10 overflow-hidden"
     >
-      {/* Background Ripple Effect */}
-      <BackgroundRippleEffect rows={8} cols={27} cellSize={56} />
+      {/* Background Ripple Effect - Adaptive grid sizing for mobile & desktop to keep DOM lean */}
+      <div className="hidden sm:block">
+        <BackgroundRippleEffect rows={8} cols={27} cellSize={56} />
+      </div>
+      <div className="block sm:hidden">
+        <BackgroundRippleEffect rows={5} cols={10} cellSize={38} />
+      </div>
 
       <div className="relative z-10 w-full max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 2xl:px-16">
         <div className="@container">
@@ -54,6 +59,7 @@ export async function HeroSection() {
                       href={profile.socialLinks.github}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="GitHub Profile"
                       className="px-4 py-2 @md/hero:px-5 @md/hero:py-2.5 rounded-xl border border-border bg-card/70 backdrop-blur-md hover:bg-card hover:border-primary/50 hover:text-primary transition-all duration-200 cursor-pointer shadow-xs active:scale-95 text-sm @md/hero:text-base font-medium"
                     >
                       GitHub
@@ -64,6 +70,7 @@ export async function HeroSection() {
                       href={profile.socialLinks.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="LinkedIn Profile"
                       className="px-4 py-2 @md/hero:px-5 @md/hero:py-2.5 rounded-xl border border-border bg-card/70 backdrop-blur-md hover:bg-card hover:border-primary/50 hover:text-primary transition-all duration-200 cursor-pointer shadow-xs active:scale-95 text-sm @md/hero:text-base font-medium"
                     >
                       LinkedIn
@@ -74,6 +81,7 @@ export async function HeroSection() {
                       href={profile.socialLinks.twitter}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="Twitter Profile"
                       className="px-4 py-2 @md/hero:px-5 @md/hero:py-2.5 rounded-xl border border-border bg-card/70 backdrop-blur-md hover:bg-card hover:border-primary/50 hover:text-primary transition-all duration-200 cursor-pointer shadow-xs active:scale-95 text-sm @md/hero:text-base font-medium"
                     >
                       Twitter
@@ -84,6 +92,7 @@ export async function HeroSection() {
                       href={profile.socialLinks.website}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="Personal Website"
                       className="px-4 py-2 @md/hero:px-5 @md/hero:py-2.5 rounded-xl border border-border bg-card/70 backdrop-blur-md hover:bg-card hover:border-primary/50 hover:text-primary transition-all duration-200 cursor-pointer shadow-xs active:scale-95 text-sm @md/hero:text-base font-medium"
                     >
                       Website

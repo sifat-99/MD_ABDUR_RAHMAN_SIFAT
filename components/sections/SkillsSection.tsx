@@ -1,5 +1,16 @@
+import dynamic from "next/dynamic";
 import { getSkills } from "@/lib/db-service";
-import { SkillsChart } from "./SkillsChart";
+
+const SkillsChart = dynamic(
+  () => import("./SkillsChart").then((mod) => mod.SkillsChart),
+  {
+    loading: () => (
+      <div className="w-full h-80 flex items-center justify-center rounded-2xl bg-card/40 border border-border/40 animate-pulse">
+        <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+      </div>
+    ),
+  }
+);
 
 export async function SkillsSection() {
   const skills = await getSkills();

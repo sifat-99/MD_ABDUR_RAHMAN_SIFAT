@@ -2,8 +2,7 @@ import PortfolioContent from "@/components/PortfolioContent";
 import { MaintenanceScreen } from "@/components/MaintenanceScreen";
 import { getSiteSettings, getProfile } from "@/lib/db-service";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function Home() {
   const settings = await getSiteSettings();
