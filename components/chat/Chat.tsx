@@ -6,9 +6,8 @@ import ReactMarkdown from "react-markdown";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useSidebar } from "../ui/sidebar";
-import type { CHAT_PROFILE_QUERYResult } from "@/sanity.types";
+import type { Profile } from "@/types/portfolio";
 import { cn } from "@/lib/utils";
-import { urlFor } from "@/sanity/lib/image";
 
 interface Message {
     id: string;
@@ -19,7 +18,7 @@ interface Message {
 export function Chat({
     profile,
 }: {
-    profile: CHAT_PROFILE_QUERYResult | null;
+    profile: Profile | null;
 }) {
     const { toggleSidebar } = useSidebar();
     const [messages, setMessages] = useState<Message[]>([]);
@@ -165,7 +164,7 @@ export function Chat({
                         {profile?.profileImage ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
-                                src={urlFor(profile.profileImage).width(64).height(64).url()}
+                                src={profile.profileImage}
                                 alt="Profile"
                                 className="w-8 h-8 rounded-full object-cover"
                             />

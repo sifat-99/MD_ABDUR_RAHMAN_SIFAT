@@ -1,28 +1,8 @@
-import { PortableText } from "@portabletext/react";
 import Image from "next/image";
-import { defineQuery } from "next-sanity";
-import { urlFor } from "@/sanity/lib/image";
-import { sanityFetch } from "@/sanity/lib/live";
-
-const EXPERIENCE_QUERY =
-  defineQuery(`*[_type == "experience"] | order(startDate desc){
-  company,
-  position,
-  employmentType,
-  location,
-  startDate,
-  endDate,
-  current,
-  description,
-  responsibilities,
-  achievements,
-  technologies[]->{name, category},
-  companyLogo,
-  companyWebsite
-}`);
+import { getExperiences } from "@/lib/db-service";
 
 export async function ExperienceSection() {
-  const { data: experiences } = await sanityFetch({ query: EXPERIENCE_QUERY });
+  const experiences = await getExperiences();
 
   if (!experiences || experiences.length === 0) {
     return null;
@@ -36,34 +16,35 @@ export async function ExperienceSection() {
   };
 
   return (
-    <section id="experience" className="py-20 px-6">
-      <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+    <section id="experience" className="py-6 sm:py-8 md:py-10">
+      <div className="w-full max-w-[2200px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 2xl:px-16">
+        <div className="text-center mb-6 sm:mb-8 md:mb-12">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3">
             Work Experience
           </h2>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
             My professional journey
           </p>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8 max-w-4xl lg:max-w-5xl mx-auto">
           {experiences.map((exp) => (
             <div
-              key={`${exp.company}-${exp.position}-${exp.startDate}`}
-              className="relative pl-8 pb-8 border-l-2 border-muted last:border-l-0"
+              key={exp.id || `${exp.company}-${exp.position}`}
+              className="relative pl-0 sm:pl-8 pb-6 sm:pb-8 border-l-0 sm:border-l-2 border-muted sm:last:border-l-0"
             >
-              {/* Timeline dot */}
-              <div className="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-background" />
+              {/* Timeline dot - Hidden on mobile, visible on tablet & desktop */}
+              <div className="hidden sm:block absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-background" />
 
-              <div className="@container/card bg-card border rounded-lg p-4 @md/card:p-6 hover:shadow-lg transition-shadow">
+              <div className="@container/card bg-card border rounded-2xl p-5 @md/card:p-6 hover:shadow-lg transition-shadow">
                 <div className="flex flex-col @md/card:flex-row @md/card:items-start gap-4 mb-4">
                   {exp.companyLogo && (
-                    <div className="relative w-12 h-12 @md/card:w-16 @md/card:h-16 rounded-lg overflow-hidden border shrink-0">
+                    <div className="relative w-12 h-12 @md/card:w-16 @md/card:h-16 rounded-lg overflow-hidden border shrink-0 bg-zinc-800">
                       <Image
-                        src={urlFor(exp.companyLogo).width(64).height(64).url()}
+                        src={exp.companyLogo}
                         alt={`${exp.company} company logo`}
                         fill
+                        sizes="(max-width: 768px) 48px, 64px"
                         className="object-cover"
                       />
                     </div>
@@ -80,7 +61,7 @@ export async function ExperienceSection() {
                       {exp.employmentType && (
                         <>
                           <span className="text-muted-foreground">•</span>
-                          <span className="text-xs @md/card:text-sm text-muted-foreground">
+                          <span className="text-xs @md/card:text-sm text-muted-foreground capitalize">
                             {exp.employmentType}
                           </span>
                         </>
@@ -106,9 +87,9 @@ export async function ExperienceSection() {
                 </div>
 
                 {exp.description && (
-                  <div className="text-muted-foreground mb-4 text-sm @md/card:text-base">
-                    <PortableText value={exp.description} />
-                  </div>
+                  <p className="text-muted-foreground mb-4 text-sm @md/card:text-base whitespace-pre-wrap">
+                    {exp.description}
+                  </p>
                 )}
 
                 {exp.responsibilities && exp.responsibilities.length > 0 && (
@@ -118,22 +99,7 @@ export async function ExperienceSection() {
                     </h4>
                     <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs @md/card:text-sm">
                       {exp.responsibilities.map((resp, idx) => (
-                        <li key={`${exp.company}-resp-${idx}`}>{resp}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {exp.achievements && exp.achievements.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="font-semibold mb-2 text-sm @md/card:text-base">
-                      Achievements:
-                    </h4>
-                    <ul className="list-disc list-inside space-y-1 text-muted-foreground text-xs @md/card:text-sm">
-                      {exp.achievements.map((achievement, idx) => (
-                        <li key={`${exp.company}-achievement-${idx}`}>
-                          {achievement}
-                        </li>
+                        <li key={`${exp.id}-resp-${idx}`}>{resp}</li>
                       ))}
                     </ul>
                   </div>
@@ -141,20 +107,14 @@ export async function ExperienceSection() {
 
                 {exp.technologies && exp.technologies.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 @md/card:gap-2 mt-4">
-                    {exp.technologies.map((tech, techIdx) => {
-                      const techData =
-                        tech && typeof tech === "object" && "name" in tech
-                          ? tech
-                          : null;
-                      return techData?.name ? (
-                        <span
-                          key={`${exp.company}-tech-${techIdx}`}
-                          className="px-2 py-0.5 @md/card:px-3 @md/card:py-1 text-xs rounded-full bg-primary/10 text-primary"
-                        >
-                          {techData.name}
-                        </span>
-                      ) : null;
-                    })}
+                    {exp.technologies.map((tech, techIdx) => (
+                      <span
+                        key={`${exp.id}-tech-${techIdx}`}
+                        className="px-2 py-0.5 @md/card:px-3 @md/card:py-1 text-xs rounded-full bg-primary/10 text-primary"
+                      >
+                        {tech}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>

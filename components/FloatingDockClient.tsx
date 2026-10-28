@@ -1,9 +1,9 @@
 "use client";
 
-import { useClerk, useUser } from "@clerk/nextjs";
+import { useAuth } from "@/context/AuthContext";
 import { IconLogout, IconMenu2, IconX } from "@tabler/icons-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DynamicIcon } from "./DynamicIcon";
 import { useSidebar } from "./ui/sidebar";
 
@@ -39,27 +39,92 @@ const getVisibleLinks = (links: DockLink[], maxItems: number) => {
 };
 
 export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
-  const { isSignedIn } = useUser();
-  const { signOut } = useClerk();
+  const { user, signOut } = useAuth();
+  const isSignedIn = Boolean(user);
   const { open, isMobile, openMobile } = useSidebar();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopMoreMenuOpen, setDesktopMoreMenuOpen] = useState(false);
   const [mobileMoreMenuOpen, setMobileMoreMenuOpen] = useState(false);
+  const [activeHash, setActiveHash] = useState<string>("#home");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (window.location.hash) {
+      setActiveHash(window.location.hash);
+    }
+
+    const updateFromHash = () => {
+      if (window.location.hash) {
+        setActiveHash(window.location.hash);
+      }
+    };
+    window.addEventListener("hashchange", updateFromHash);
+
+    const sectionIds = [
+      "home",
+      "about",
+      "experience",
+      "projects",
+      "skills",
+      "services",
+      "education",
+      "certifications",
+      "achievements",
+      "blog",
+      "testimonials",
+      "contact",
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.find((entry) => entry.isIntersecting);
+        if (visible && visible.target.id) {
+          setActiveHash(`#${visible.target.id}`);
+        }
+      },
+      {
+        rootMargin: "-25% 0px -65% 0px",
+      }
+    );
+
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => {
+      window.removeEventListener("hashchange", updateFromHash);
+      observer.disconnect();
+    };
+  }, []);
 
   const isSidebarOpen = isMobile ? openMobile : open;
+
+  const isItemActive = (href?: string) => {
+    if (!href) return false;
+    if (href === activeHash) return true;
+    if (
+      (href === "#home" || href === "#" || href === "/") &&
+      (activeHash === "#home" || activeHash === "#" || activeHash === "")
+    ) {
+      return true;
+    }
+    return false;
+  };
 
   const links: DockLink[] = [
     ...navItems.map((item) => ({
       title: item.title || "",
       href: item.href || "#",
-      icon: <DynamicIcon iconName={item.icon || "IconHome"} />,
+      icon: <DynamicIcon iconName={item.icon || "IconHome"} className="w-full h-full text-current" />,
       isExternal: item.isExternal,
     })),
     ...(isSignedIn && !isSidebarOpen
       ? [
           {
             title: "Sign Out",
-            icon: <IconLogout className="h-full w-full" />,
+            icon: <IconLogout className="h-full w-full text-current" />,
             onClick: () => signOut(),
           },
         ]
@@ -79,12 +144,19 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
             : "bottom-4 md:left-4 md:translate-x-0 lg:left-1/2 lg:-translate-x-1/2"
         }`}
       >
-        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl md:rounded-2xl bg-white/20 dark:bg-black/30 hover:bg-white/30 dark:hover:bg-black/40 backdrop-blur-xl border border-white/30 dark:border-white/20 hover:border-white/40 dark:hover:border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.15)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] pointer-events-auto transition-all duration-300">
+        <div
+          className="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl md:rounded-3xl bg-white/45 dark:bg-black/50 hover:bg-white/55 dark:hover:bg-black/60 border border-white/60 dark:border-white/20 hover:border-white/80 dark:hover:border-white/30 shadow-[0_16px_40px_rgba(0,0,0,0.16),0_4px_16px_rgba(0,0,0,0.06),inset_0_1.5px_1px_0_rgba(255,255,255,0.9),inset_0_-1px_1px_0_rgba(0,0,0,0.05)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.65),0_4px_16px_rgba(0,0,0,0.4),inset_0_1.5px_1px_0_rgba(255,255,255,0.25)] pointer-events-auto transition-all duration-300"
+          style={{
+            backdropFilter: "blur(32px) saturate(210%) brightness(103%)",
+            WebkitBackdropFilter: "blur(32px) saturate(210%) brightness(103%)",
+          }}
+        >
           {desktop.visible.map((item) => (
             <DockIcon
               key={`${item.title}-${item.href}`}
               item={item}
               isVertical={false}
+              isActive={isItemActive(item.href)}
             />
           ))}
 
@@ -94,32 +166,40 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
               <button
                 type="button"
                 onClick={() => setDesktopMoreMenuOpen(!desktopMoreMenuOpen)}
-                className="group relative flex items-center justify-center w-12 h-12 md:w-12 md:h-12"
+                className="group relative flex items-center justify-center w-12 h-12 md:w-12 md:h-12 cursor-pointer"
+                aria-label="Toggle more navigation links"
               >
-                <div className="relative flex items-center justify-center w-full h-full rounded-full bg-white/10 dark:bg-white/5 group-hover/dock:bg-white/40 dark:group-hover/dock:bg-white/20 backdrop-blur-md border border-white/20 dark:border-white/10 group-hover/dock:border-white/50 dark:group-hover/dock:border-white/30 transition-all duration-500 ease-out hover:scale-125 hover:-translate-y-2 md:hover:-translate-y-3 hover:!bg-white/50 dark:hover:!bg-white/30 hover:!border-white/70 dark:hover:!border-white/40 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)]">
-                  <div className="w-6 h-6 md:w-6 md:h-6 text-neutral-400/60 group-hover/dock:text-neutral-500 dark:text-neutral-300/60 dark:group-hover/dock:text-neutral-300 group-hover:!text-neutral-600 dark:group-hover:!text-neutral-200 transition-colors duration-300">
+                <div className="relative flex items-center justify-center w-full h-full rounded-full bg-white/70 dark:bg-white/12 border border-white/85 dark:border-white/20 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1.5px_rgba(255,255,255,0.95)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_1.5px_rgba(255,255,255,0.2)] transition-all duration-300 ease-out hover:scale-125 hover:-translate-y-2 md:hover:-translate-y-2.5 hover:!bg-primary hover:!border-primary hover:!shadow-[0_12px_24px_-4px_color-mix(in_srgb,var(--primary)_50%,transparent),inset_0_1px_1px_rgba(255,255,255,0.8)]">
+                  <div className="w-5 h-5 md:w-5.5 md:h-5.5 text-zinc-900 dark:text-zinc-50 group-hover:!text-primary-foreground transition-colors duration-200 flex items-center justify-center [filter:drop-shadow(0_1px_0_rgba(255,255,255,0.85))] dark:[filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.8))] group-hover:![filter:none]">
                     {desktopMoreMenuOpen ? (
-                      <IconX className="w-6 h-6" />
+                      <IconX className="w-5 h-5 md:w-5.5 md:h-5.5 stroke-[2.2]" />
                     ) : (
-                      <IconMenu2 className="w-6 h-6" />
+                      <IconMenu2 className="w-5 h-5 md:w-5.5 md:h-5.5 stroke-[2.2]" />
                     )}
                   </div>
                 </div>
                 {/* Tooltip */}
-                <div className="absolute -top-9 md:-top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-white/40 dark:border-white/20 text-xs md:text-sm font-medium text-neutral-800 dark:text-neutral-200 whitespace-nowrap opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 group-hover:-translate-y-2 transition-all duration-300 pointer-events-none shadow-[0_8px_32px_0_rgba(0,0,0,0.2)]">
+                <div className="absolute -top-10 md:-top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl bg-zinc-900/95 dark:bg-zinc-100/95 backdrop-blur-xl border border-zinc-800 dark:border-zinc-200 text-xs font-bold text-zinc-100 dark:text-zinc-900 whitespace-nowrap opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 group-hover:-translate-y-2 transition-all duration-300 pointer-events-none shadow-xl shadow-black/25 z-50">
                   More
-                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-white/90 dark:bg-black/90 border-r border-b border-white/40 dark:border-white/20" />
+                  <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-zinc-900/95 dark:bg-zinc-100/95 border-r border-b border-zinc-800 dark:border-zinc-200" />
                 </div>
               </button>
 
               {/* Desktop More Menu - Expands Upward */}
               {desktopMoreMenuOpen && (
-                <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[100] flex flex-col-reverse gap-2 p-3 rounded-xl bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-white/40 dark:border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] animate-in slide-in-from-bottom-2 duration-200">
+                <div
+                  className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[100] flex flex-col-reverse gap-2 p-3 rounded-2xl bg-white/75 dark:bg-black/75 border border-white/60 dark:border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.8)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.7),inset_0_1px_1px_rgba(255,255,255,0.2)] animate-in slide-in-from-bottom-2 duration-200"
+                  style={{
+                    backdropFilter: "blur(32px) saturate(210%)",
+                    WebkitBackdropFilter: "blur(32px) saturate(210%)",
+                  }}
+                >
                   {desktop.hidden.map((item) => (
                     <DockIcon
                       key={`${item.title}-${item.href}-more`}
                       item={item}
                       isVertical={true}
+                      isActive={isItemActive(item.href)}
                       onItemClick={() => setDesktopMoreMenuOpen(false)}
                     />
                   ))}
@@ -135,23 +215,35 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
         <button
           type="button"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="w-12 h-12 rounded-full bg-white/20 dark:bg-black/30 hover:bg-white/30 dark:hover:bg-black/40 backdrop-blur-xl border border-white/30 dark:border-white/20 hover:border-white/40 dark:hover:border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.15)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] flex items-center justify-center text-neutral-500 dark:text-neutral-300 hover:text-neutral-600 dark:hover:text-neutral-200 transition-all duration-300"
+          className="w-10 h-10 rounded-full bg-white/70 dark:bg-black/60 border border-white/80 dark:border-white/20 shadow-[0_4px_16px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.8)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.2)] flex items-center justify-center text-zinc-900 dark:text-zinc-50 hover:text-primary transition-all duration-200 cursor-pointer active:scale-95"
+          style={{
+            backdropFilter: "blur(24px) saturate(200%)",
+            WebkitBackdropFilter: "blur(24px) saturate(200%)",
+          }}
+          aria-label="Toggle navigation menu"
         >
           {mobileMenuOpen ? (
-            <IconX className="w-6 h-6" />
+            <IconX className="w-5 h-5 stroke-[2.2]" />
           ) : (
-            <IconMenu2 className="w-6 h-6" />
+            <IconMenu2 className="w-5 h-5 stroke-[2.2]" />
           )}
         </button>
 
         {/* Mobile Vertical menu */}
         {mobileMenuOpen && (
-          <div className="absolute top-14 right-0 z-[100] flex flex-col gap-2 p-3 rounded-xl bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-white/40 dark:border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] animate-in slide-in-from-top-2 duration-200">
+          <div
+            className="absolute top-12 right-0 z-[100] flex flex-col gap-2 p-3 rounded-2xl bg-white/75 dark:bg-black/75 border border-white/60 dark:border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.8)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.7),inset_0_1px_1px_rgba(255,255,255,0.2)] animate-in slide-in-from-top-2 duration-200"
+            style={{
+              backdropFilter: "blur(32px) saturate(210%)",
+              WebkitBackdropFilter: "blur(32px) saturate(210%)",
+            }}
+          >
             {mobile.visible.map((item) => (
               <DockIcon
                 key={`${item.title}-${item.href}-mobile`}
                 item={item}
                 isVertical={true}
+                isActive={isItemActive(item.href)}
                 onItemClick={() => setMobileMenuOpen(false)}
               />
             ))}
@@ -162,32 +254,40 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
                 <button
                   type="button"
                   onClick={() => setMobileMoreMenuOpen(!mobileMoreMenuOpen)}
-                  className="group relative flex items-center justify-center w-12 h-12"
+                  className="group relative flex items-center justify-center w-12 h-12 cursor-pointer"
+                  aria-label="Toggle more navigation options"
                 >
-                  <div className="relative flex items-center justify-center w-full h-full rounded-full bg-white/25 dark:bg-white/10 backdrop-blur-md border border-white/40 dark:border-white/20 transition-all duration-300 hover:scale-110 hover:bg-gray-500/10 dark:hover:bg-white/20 hover:border-white/60 dark:hover:border-white/30">
-                    <div className="w-6 h-6 text-neutral-500 dark:text-neutral-300">
+                  <div className="relative flex items-center justify-center w-full h-full rounded-full bg-white/70 dark:bg-white/12 border border-white/85 dark:border-white/20 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1.5px_rgba(255,255,255,0.95)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_1.5px_rgba(255,255,255,0.2)] transition-all duration-300 hover:scale-110 hover:!bg-primary hover:!border-primary">
+                    <div className="w-6 h-6 text-zinc-900 dark:text-zinc-50 group-hover:!text-primary-foreground transition-colors duration-200 flex items-center justify-center [filter:drop-shadow(0_1px_0_rgba(255,255,255,0.85))] dark:[filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.8))] group-hover:![filter:none]">
                       {mobileMoreMenuOpen ? (
-                        <IconX className="w-6 h-6" />
+                        <IconX className="w-6 h-6 stroke-[2.2]" />
                       ) : (
-                        <IconMenu2 className="w-6 h-6" />
+                        <IconMenu2 className="w-6 h-6 stroke-[2.2]" />
                       )}
                     </div>
                   </div>
                   {/* Tooltip */}
-                  <div className="absolute right-14 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-white/40 dark:border-white/20 text-sm font-medium text-neutral-800 dark:text-neutral-200 whitespace-nowrap opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 group-hover:-translate-x-1 transition-all duration-300 pointer-events-none shadow-[0_8px_32px_0_rgba(0,0,0,0.2)]">
+                  <div className="absolute right-14 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-xl bg-zinc-900/95 dark:bg-zinc-100/95 backdrop-blur-xl border border-zinc-800 dark:border-zinc-200 text-xs font-bold text-zinc-100 dark:text-zinc-900 whitespace-nowrap opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 group-hover:-translate-x-1 transition-all duration-300 pointer-events-none shadow-xl z-50">
                     More
-                    <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-white/90 dark:bg-black/90 border-r border-t border-white/40 dark:border-white/20" />
+                    <div className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-zinc-900/95 dark:bg-zinc-100/95 border-r border-t border-zinc-800 dark:border-zinc-200" />
                   </div>
                 </button>
 
                 {/* Mobile More Menu - Expands Sideways (to the left) */}
                 {mobileMoreMenuOpen && (
-                  <div className="absolute top-0 right-16 z-[110] flex flex-row-reverse gap-2 p-3 rounded-xl bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-white/40 dark:border-white/30 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] animate-in slide-in-from-right-2 duration-200">
+                  <div
+                    className="absolute top-0 right-16 z-[110] flex flex-row-reverse gap-2 p-3 rounded-2xl bg-white/75 dark:bg-black/75 border border-white/60 dark:border-white/20 shadow-2xl animate-in slide-in-from-right-2 duration-200"
+                    style={{
+                      backdropFilter: "blur(32px) saturate(210%)",
+                      WebkitBackdropFilter: "blur(32px) saturate(210%)",
+                    }}
+                  >
                     {mobile.hidden.map((item) => (
                       <DockIcon
                         key={`${item.title}-${item.href}-mobile-more`}
                         item={item}
                         isVertical={false}
+                        isActive={isItemActive(item.href)}
                         onItemClick={() => {
                           setMobileMoreMenuOpen(false);
                           setMobileMenuOpen(false);
@@ -205,37 +305,118 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
   );
 }
 
+function smoothScrollToSection(targetHref: string) {
+  if (typeof window === "undefined") return;
+
+  const hashIndex = targetHref.indexOf("#");
+  if (hashIndex === -1) {
+    window.location.href = targetHref;
+    return;
+  }
+
+  const targetHash = targetHref.slice(hashIndex);
+  const targetId = targetHash.replace("#", "").trim();
+
+  const isCurrentPage =
+    window.location.pathname === "/" ||
+    window.location.pathname === "" ||
+    targetHref.startsWith("#") ||
+    targetHref.startsWith("/#");
+
+  if (!isCurrentPage) {
+    window.location.href = `/${targetHash}`;
+    return;
+  }
+
+  const lenis = (window as any).__lenis;
+
+  if (!targetId || targetId === "home") {
+    if (lenis) {
+      lenis.scrollTo(0, {
+        duration: 1.15,
+        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
+    } else {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+    try {
+      window.history.pushState(null, "", "#home");
+    } catch {}
+    return;
+  }
+
+  const targetElement =
+    document.getElementById(targetId) ||
+    document.querySelector(targetHash);
+
+  if (targetElement) {
+    if (lenis) {
+      lenis.scrollTo(targetElement, {
+        offset: -20,
+        duration: 1.15,
+        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      });
+    } else {
+      const rect = targetElement.getBoundingClientRect();
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
+      window.scrollTo({
+        top: Math.max(0, rect.top + scrollTop - 20),
+        behavior: "smooth",
+      });
+    }
+
+    try {
+      window.history.pushState(null, "", targetHash);
+    } catch {}
+  }
+}
+
 function DockIcon({
   item,
   isVertical,
+  isActive,
   onItemClick,
 }: {
   item: DockLink;
   isVertical: boolean;
+  isActive?: boolean;
   onItemClick?: () => void;
 }) {
   const baseIconClasses =
-    "relative flex items-center justify-center w-full h-full rounded-full backdrop-blur-md transition-all";
-  const verticalIconClasses = `${baseIconClasses} bg-white/40 dark:bg-white/20 border border-white/50 dark:border-white/30 duration-300 hover:scale-110 hover:bg-white/50 dark:hover:bg-white/30 hover:border-white/70 dark:hover:border-white/40`;
-  const horizontalIconClasses = `${baseIconClasses} bg-white/10 dark:bg-white/5 group-hover/dock:bg-white/40 dark:group-hover/dock:bg-white/20 border border-white/20 dark:border-white/10 group-hover/dock:border-white/50 dark:group-hover/dock:border-white/30 duration-500 ease-out hover:scale-125 hover:-translate-y-2 md:hover:-translate-y-3 hover:!bg-white/50 dark:hover:!bg-white/30 hover:!border-white/70 dark:hover:!border-white/40 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)]`;
+    "relative flex items-center justify-center w-full h-full rounded-full transition-all";
+  const verticalIconClasses = `${baseIconClasses} ${
+    isActive
+      ? "bg-primary/20 dark:bg-primary/30 border-primary text-primary shadow-[0_0_16px_color-mix(in_srgb,var(--primary)_40%,transparent)]"
+      : "bg-white/70 dark:bg-white/12 border border-white/85 dark:border-white/20 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1.5px_rgba(255,255,255,0.95)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_1.5px_rgba(255,255,255,0.2)]"
+  } duration-300 hover:scale-110 hover:!bg-primary hover:!border-primary hover:!shadow-[0_10px_20px_-4px_color-mix(in_srgb,var(--primary)_50%,transparent),inset_0_1px_1px_rgba(255,255,255,0.8)]`;
+
+  const horizontalIconClasses = `${baseIconClasses} ${
+    isActive
+      ? "bg-primary/20 dark:bg-primary/30 border-primary text-primary shadow-[0_0_16px_color-mix(in_srgb,var(--primary)_40%,transparent)]"
+      : "bg-white/70 dark:bg-white/12 border border-white/85 dark:border-white/20 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1.5px_rgba(255,255,255,0.95)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_1.5px_rgba(255,255,255,0.2)]"
+  } duration-300 ease-out hover:scale-125 hover:-translate-y-2 md:hover:-translate-y-2.5 hover:!bg-primary hover:!border-primary hover:!shadow-[0_12px_24px_-4px_color-mix(in_srgb,var(--primary)_50%,transparent),inset_0_1px_1px_rgba(255,255,255,0.8)]`;
 
   const Tooltip = ({ direction }: { direction: "vertical" | "horizontal" }) => {
     const isHorizontal = direction === "horizontal";
     return (
       <div
-        className={`absolute px-3 py-1.5 ${isHorizontal ? "rounded-xl" : "rounded-lg"} bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-white/40 dark:border-white/20 ${isHorizontal ? "text-xs md:text-sm" : "text-sm"} font-medium text-neutral-800 dark:text-neutral-200 whitespace-nowrap opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 pointer-events-none shadow-[0_8px_32px_0_rgba(0,0,0,0.2)] ${
+        className={`absolute px-3 py-1.5 rounded-xl bg-zinc-900/95 dark:bg-zinc-100/95 backdrop-blur-xl border border-zinc-800 dark:border-zinc-200 text-xs font-bold text-zinc-100 dark:text-zinc-900 whitespace-nowrap opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 pointer-events-none shadow-xl shadow-black/25 z-50 ${
           isHorizontal
-            ? "-top-9 md:-top-12 left-1/2 -translate-x-1/2 group-hover:-translate-y-2"
+            ? "-top-10 md:-top-12 left-1/2 -translate-x-1/2 group-hover:-translate-y-2"
             : "right-14 top-1/2 -translate-y-1/2 group-hover:-translate-x-1"
         }`}
       >
         {item.title}
         <div
-          className={`absolute w-2 h-2 rotate-45 bg-white/90 dark:bg-black/90 ${
+          className={`absolute w-2 h-2 rotate-45 bg-zinc-900/95 dark:bg-zinc-100/95 ${
             isHorizontal
               ? "-bottom-1 left-1/2 -translate-x-1/2 border-r border-b"
               : "-right-1 top-1/2 -translate-y-1/2 border-r border-t"
-          } border-white/40 dark:border-white/20`}
+          } border-zinc-800 dark:border-zinc-200`}
         />
       </div>
     );
@@ -249,25 +430,43 @@ function DockIcon({
     onItemClick?.();
   };
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (item.isExternal || item.href?.startsWith("http://") || item.href?.startsWith("https://")) {
+      onItemClick?.();
+      return;
+    }
+
+    if (item.href?.includes("#")) {
+      e.preventDefault();
+      smoothScrollToSection(item.href);
+      onItemClick?.();
+      return;
+    }
+
+    onItemClick?.();
+  };
+
   const content = (
     <>
       <div className={isVertical ? verticalIconClasses : horizontalIconClasses}>
         <div
-          className={`w-6 h-6 md:w-6 md:h-6 ${
-            isVertical
-              ? "text-neutral-500 dark:text-neutral-300"
-              : "text-neutral-400/60 group-hover/dock:text-neutral-500 dark:text-neutral-300/60 dark:group-hover/dock:text-neutral-300 group-hover:!text-neutral-600 dark:group-hover:!text-neutral-200 transition-colors duration-300"
-          }`}
+          className={`w-5 h-5 md:w-5.5 md:h-5.5 ${
+            isActive ? "text-primary dark:text-primary font-bold" : "text-zinc-900 dark:text-zinc-50"
+          } group-hover:!text-primary-foreground transition-colors duration-200 flex items-center justify-center [&>svg]:stroke-[2.2] [filter:drop-shadow(0_1px_0_rgba(255,255,255,0.85))] dark:[filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.8))] group-hover:![filter:none]`}
         >
           {item.icon}
         </div>
+        {/* Subtle active glowing indicator dot */}
+        {isActive && !isVertical && (
+          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_var(--primary)] pointer-events-none" />
+        )}
       </div>
       <Tooltip direction={isVertical ? "vertical" : "horizontal"} />
     </>
   );
 
   const wrapperClasses =
-    "group relative flex items-center justify-center w-12 h-12 md:w-12 md:h-12";
+    "group relative flex items-center justify-center w-12 h-12 md:w-12 md:h-12 cursor-pointer";
 
   return item.onClick ? (
     <button type="button" onClick={handleClick} className={wrapperClasses}>
@@ -279,8 +478,8 @@ function DockIcon({
       target={item.isExternal ? "_blank" : undefined}
       rel={item.isExternal ? "noopener noreferrer" : undefined}
       className={wrapperClasses}
-      scroll={!item.isExternal}
-      onClick={onItemClick}
+      scroll={false}
+      onClick={handleLinkClick}
     >
       {content}
     </Link>

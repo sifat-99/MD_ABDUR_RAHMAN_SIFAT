@@ -1,52 +1,28 @@
-import { defineQuery } from "next-sanity";
 import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
-import { urlFor } from "@/sanity/lib/image";
-import { sanityFetch } from "@/sanity/lib/live";
-
-const TESTIMONIALS_QUERY =
-  defineQuery(`*[_type == "testimonial" && featured == true] | order(order asc){
-  name,
-  position,
-  company,
-  testimonial,
-  rating,
-  date,
-  avatar,
-  companyLogo,
-  linkedinUrl
-}`);
+import { getTestimonials } from "@/lib/db-service";
 
 export async function TestimonialsSection() {
-  const { data: testimonials } = await sanityFetch({
-    query: TESTIMONIALS_QUERY,
-  });
+  const testimonials = await getTestimonials();
 
   if (!testimonials || testimonials.length === 0) {
     return null;
   }
 
-  // Map Sanity testimonials to AnimatedTestimonials format
   const formattedTestimonials = testimonials.map((testimonial) => ({
     quote: testimonial.testimonial || "",
     name: testimonial.name || "Anonymous",
     designation: testimonial.company
       ? `${testimonial.position} at ${testimonial.company}`
       : testimonial.position || "",
-    // Use avatar for the main image
-    src: testimonial.avatar
-      ? urlFor(testimonial.avatar).width(500).height(500).url()
-      : "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=500&auto=format&fit=crop",
-    // Pass company logo separately to show next to name
-    companyLogo: testimonial.companyLogo
-      ? urlFor(testimonial.companyLogo).width(32).height(32).url()
-      : undefined,
+    src: testimonial.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=500&auto=format&fit=crop",
+    companyLogo: testimonial.companyLogo || undefined,
   }));
 
   return (
-    <section id="testimonials" className="py-20 px-6">
-      <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-8">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+    <section id="testimonials" className="py-6 sm:py-8 md:py-10">
+      <div className="w-full max-w-[2200px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 2xl:px-16">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3">
             Client Testimonials
           </h2>
           <p className="text-xl text-muted-foreground">

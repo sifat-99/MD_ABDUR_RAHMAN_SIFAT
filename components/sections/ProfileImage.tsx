@@ -1,6 +1,6 @@
 "use client";
 
-import { useClerk, useUser } from "@clerk/nextjs";
+import { useAuth } from "@/context/AuthContext";
 import { MessageCircle, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -18,25 +18,27 @@ export function ProfileImage({
   lastName,
 }: ProfileImageProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [imgSrc, setImgSrc] = useState(imageUrl || "/Sifat.png");
   const { toggleSidebar, open } = useSidebar();
-  const { isSignedIn } = useUser();
-  const { openSignIn } = useClerk();
+  const { user } = useAuth();
 
   return (
     <button
       type="button"
-      onClick={() => (isSignedIn ? toggleSidebar() : openSignIn())}
-      className="relative aspect-square rounded-2xl overflow-hidden border-4 border-primary/20 block group cursor-pointer w-full"
+      onClick={() => toggleSidebar()}
+      className="relative aspect-square w-full max-w-[280px] sm:max-w-[340px] md:max-w-[420px] lg:max-w-[480px] xl:max-w-[540px] 2xl:max-w-[600px] max-h-[min(600px,68vh)] mx-auto lg:ml-auto lg:mr-0 rounded-3xl overflow-hidden border-4 border-primary/20 shadow-2xl block group cursor-pointer transition-all duration-300 hover:border-primary/50 hover:shadow-primary/20"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       aria-label="Toggle AI Chat Sidebar"
     >
       <Image
-        src={imageUrl}
+        src={imgSrc}
         alt={`${firstName} ${lastName}`}
         fill
+        sizes="(max-width: 768px) 100vw, 500px"
         className="object-cover transition-transform duration-300 group-hover:scale-105"
         priority
+        onError={() => setImgSrc("/Sifat.png")}
       />
 
       {/* Online Badge */}

@@ -5,8 +5,15 @@ import ChatWrapper from "./chat/ChatWrapper";
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
-      <SidebarContent className="h-full w-full bg-white">
-        <Suspense fallback={<div>Loading...</div>}>
+      <SidebarContent className="h-full w-full bg-background border-l border-border">
+        <Suspense
+          fallback={
+            <div className="h-full w-full flex flex-col items-center justify-center p-6 space-y-3 text-muted-foreground animate-pulse">
+              <div className="w-10 h-10 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+              <span className="text-xs">Connecting AI Assistant...</span>
+            </div>
+          }
+        >
           <ChatWrapper />
         </Suspense>
       </SidebarContent>

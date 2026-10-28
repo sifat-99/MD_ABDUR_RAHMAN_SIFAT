@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sifat.online/sitemap.xml

@@ -1,28 +1,10 @@
 import { IconAward, IconCalendar, IconExternalLink } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
-import { defineQuery } from "next-sanity";
-import { urlFor } from "@/sanity/lib/image";
-import { sanityFetch } from "@/sanity/lib/live";
-
-const EDUCATION_QUERY =
-  defineQuery(`*[_type == "education"] | order(endDate desc, startDate desc){
-  institution,
-  degree,
-  fieldOfStudy,
-  startDate,
-  endDate,
-  current,
-  gpa,
-  description,
-  achievements,
-  logo,
-  website,
-  order
-}`);
+import { getEducations } from "@/lib/db-service";
 
 export async function EducationSection() {
-  const { data: education } = await sanityFetch({ query: EDUCATION_QUERY });
+  const education = await getEducations();
 
   if (!education || education.length === 0) {
     return null;
@@ -38,36 +20,20 @@ export async function EducationSection() {
   return (
     <section
       id="education"
-      className="relative py-20 px-6 bg-muted/30 overflow-hidden"
+      className="relative py-6 sm:py-8 md:py-10 bg-muted/30 overflow-hidden"
     >
-      {/* Section-wide Dotted Glow Background */}
-      {/* <DottedGlowBackground
-        className="pointer-events-none opacity-30 dark:opacity-50 mask-radial-to-75% mask-radial-at-bottom"
-        opacity={0.5}
-        gap={10}
-        radius={3.5}
-        colorLightVar="--color-neutral-400"
-        glowColorLightVar="--color-primary"
-        colorDarkVar="--color-neutral-600"
-        glowColorDarkVar="--color-primary"
-        backgroundOpacity={0}
-        speedMin={0.2}
-        speedMax={0.8}
-        speedScale={1.2}
-      /> */}
-
-      <div className="container mx-auto max-w-6xl relative z-10">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">Education</h2>
+      <div className="w-full max-w-[2200px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 2xl:px-16 relative z-10">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3">Education</h2>
           <p className="text-xl text-muted-foreground">
             My academic background
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4 gap-6">
           {education.map((edu) => (
             <div
-              key={`${edu.institution}-${edu.degree}-${edu.startDate}`}
+              key={edu.id || `${edu.institution}-${edu.degree}`}
               className="group relative bg-card border rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300"
             >
               {/* Accent gradient bar */}
@@ -79,9 +45,10 @@ export async function EducationSection() {
                   {edu.logo && (
                     <div className="relative w-16 h-16 rounded-lg overflow-hidden border-2 border-primary/20 shrink-0 group-hover:border-primary/40 transition-colors">
                       <Image
-                        src={urlFor(edu.logo).width(64).height(64).url()}
+                        src={edu.logo}
                         alt={`${edu.institution} logo`}
                         fill
+                        sizes="64px"
                         className="object-cover"
                       />
                     </div>
@@ -140,7 +107,7 @@ export async function EducationSection() {
                     <ul className="space-y-1.5">
                       {edu.achievements.map((achievement, idx) => (
                         <li
-                          key={`${edu.institution}-achievement-${idx}`}
+                          key={`${edu.id}-ach-${idx}`}
                           className="text-xs text-muted-foreground flex items-start gap-2"
                         >
                           <span className="text-primary mt-1">▸</span>

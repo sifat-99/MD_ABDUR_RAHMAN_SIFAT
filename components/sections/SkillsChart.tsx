@@ -8,14 +8,7 @@ import {
     ChartTooltipContent,
 } from "@/components/ui/chart";
 
-interface Skill {
-    name: string | null;
-    category: string | null;
-    proficiency: string | null;
-    percentage: number | null;
-    yearsOfExperience: number | null;
-    color: string | null;
-}
+import type { Skill } from "@/types/portfolio";
 
 interface SkillsChartProps {
     skills: Skill[];
@@ -36,7 +29,7 @@ export function SkillsChart({ skills }: SkillsChartProps) {
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
             {Array.from(groupedSkills.entries()).map(([category, categorySkills]) => {
                 if (!categorySkills || categorySkills.length === 0) return null;
 

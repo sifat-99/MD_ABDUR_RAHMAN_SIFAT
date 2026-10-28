@@ -1,27 +1,10 @@
 import { IconExternalLink, IconStar } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
-import { defineQuery } from "next-sanity";
-import { urlFor } from "@/sanity/lib/image";
-import { sanityFetch } from "@/sanity/lib/live";
-
-const ACHIEVEMENTS_QUERY =
-  defineQuery(`*[_type == "achievement"] | order(date desc){
-  title,
-  type,
-  issuer,
-  date,
-  description,
-  image,
-  url,
-  featured,
-  order
-}`);
+import { getAchievements } from "@/lib/db-service";
 
 export async function AchievementsSection() {
-  const { data: achievements } = await sanityFetch({
-    query: ACHIEVEMENTS_QUERY,
-  });
+  const achievements = await getAchievements();
 
   if (!achievements || achievements.length === 0) {
     return null;
@@ -64,15 +47,14 @@ export async function AchievementsSection() {
     return labels[type] || "Achievement";
   };
 
-  // Separate featured and regular achievements
   const featured = achievements.filter((a) => a.featured);
   const regular = achievements.filter((a) => !a.featured);
 
   return (
-    <section id="achievements" className="py-20 px-6 bg-muted/30">
-      <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+    <section id="achievements" className="py-6 sm:py-8 md:py-10 bg-muted/30">
+      <div className="w-full max-w-[2200px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 2xl:px-16">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3">
             Achievements & Awards
           </h2>
           <p className="text-xl text-muted-foreground">
@@ -91,18 +73,16 @@ export async function AchievementsSection() {
               <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-6">
                 {featured.map((achievement) => (
                   <div
-                    key={`${achievement.title}-${achievement.date}`}
+                    key={achievement.id || `${achievement.title}-${achievement.date}`}
                     className="@container/card bg-card border-2 border-primary/20 rounded-lg p-6 hover:shadow-lg transition-all hover:scale-[1.02]"
                   >
                     {achievement.image && (
-                      <div className="relative w-full h-32 @md/card:h-48 mb-4 rounded-lg overflow-hidden">
+                      <div className="relative w-full h-32 @md/card:h-48 mb-4 rounded-lg overflow-hidden bg-zinc-800">
                         <Image
-                          src={urlFor(achievement.image)
-                            .width(400)
-                            .height(200)
-                            .url()}
+                          src={achievement.image}
                           alt={achievement.title || "Achievement"}
                           fill
+                          sizes="(max-width: 768px) 100vw, 400px"
                           className="object-cover"
                         />
                       </div>
@@ -167,18 +147,16 @@ export async function AchievementsSection() {
               <div className="grid grid-cols-1 @2xl:grid-cols-2 @5xl:grid-cols-3 gap-6">
                 {regular.map((achievement) => (
                   <div
-                    key={`${achievement.title}-${achievement.date}`}
+                    key={achievement.id || `${achievement.title}-${achievement.date}`}
                     className="@container/card bg-card border rounded-lg p-6 hover:shadow-lg transition-all hover:scale-105 flex flex-col"
                   >
                     {achievement.image && (
-                      <div className="relative w-full h-24 @md/card:h-32 mb-4 rounded-lg overflow-hidden">
+                      <div className="relative w-full h-24 @md/card:h-32 mb-4 rounded-lg overflow-hidden bg-zinc-800">
                         <Image
-                          src={urlFor(achievement.image)
-                            .width(300)
-                            .height(128)
-                            .url()}
+                          src={achievement.image}
                           alt={achievement.title || "Achievement"}
                           fill
+                          sizes="(max-width: 768px) 100vw, 400px"
                           className="object-cover"
                         />
                       </div>

@@ -1,6 +1,6 @@
 "use server";
 
-import { serverClient } from "@/sanity/lib/serverClient";
+import { saveContact } from "@/lib/db-service";
 import { mailOptions, transporter, autoReplyTransporter } from "../../config/nodemailer";
 
 const CONTACT_MESSAGE_FIELDS: Record<string, string> = {
@@ -156,15 +156,12 @@ export async function submitContactForm(prevState: any, formData: FormData) {
       };
     }
 
-    // 1. Create the document in Sanity
-    const result = await serverClient.create({
-      _type: "contact",
+    // 1. Create the document in Firebase Realtime DB & MongoDB
+    const result = await saveContact({
       name,
       email,
       subject,
       message,
-      submittedAt: new Date().toISOString(),
-      status: "new",
     });
 
     // 2. Send Emails using Nodemailer

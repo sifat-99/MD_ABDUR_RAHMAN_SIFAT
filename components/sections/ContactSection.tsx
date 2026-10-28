@@ -1,33 +1,24 @@
 import Link from "next/link";
-import { defineQuery } from "next-sanity";
 import WorldMapDemo from "@/components/world-map-demo";
-import { sanityFetch } from "@/sanity/lib/live";
+import { getProfile } from "@/lib/db-service";
 import { ContactForm } from "./ContactForm";
 
-const PROFILE_QUERY = defineQuery(`*[_id == "singleton-profile"][0]{
-  email,
-  phone,
-  location,
-  socialLinks
-}`);
-
 export async function ContactSection() {
-    const { data: profile } = await sanityFetch({ query: PROFILE_QUERY });
+    const profile = await getProfile();
 
     if (!profile) {
         return null;
     }
 
     return (
-        <section id="contact" className="py-20 px-6 pb-40 bg-muted/30">
+        <section id="contact" className="pt-6 sm:pt-8 md:pt-10 pb-36 sm:pb-40 md:pb-48 lg:pb-52 bg-muted/30">
             <WorldMapDemo />
 
-            <div className="container mx-auto max-w-4xl">
-                <div className="text-center mb-12">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-4">Get In Touch</h2>
+            <div className="w-full max-w-[2200px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 2xl:px-16">
+                <div className="text-center mb-6 sm:mb-8">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3">Get In Touch</h2>
                     <p className="text-xl text-muted-foreground">
-                        Wherever you are in the world, let&apos;s work together on your next
-                        project.
+                        Wherever you are in the world, let&apos;s work together on your next project.
                     </p>
                 </div>
 
@@ -137,36 +128,6 @@ export async function ContactSection() {
                                                 className="px-3 py-1.5 @md/info:px-4 @md/info:py-2 rounded-lg border hover:bg-accent transition-colors text-xs @md/info:text-sm"
                                             >
                                                 Website
-                                            </Link>
-                                        )}
-                                        {profile.socialLinks.medium && (
-                                            <Link
-                                                href={profile.socialLinks.medium}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="px-3 py-1.5 @md/info:px-4 @md/info:py-2 rounded-lg border hover:bg-accent transition-colors text-xs @md/info:text-sm"
-                                            >
-                                                Medium
-                                            </Link>
-                                        )}
-                                        {profile.socialLinks.devto && (
-                                            <Link
-                                                href={profile.socialLinks.devto}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="px-3 py-1.5 @md/info:px-4 @md/info:py-2 rounded-lg border hover:bg-accent transition-colors text-xs @md/info:text-sm"
-                                            >
-                                                Dev.to
-                                            </Link>
-                                        )}
-                                        {profile.socialLinks.youtube && (
-                                            <Link
-                                                href={profile.socialLinks.youtube}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="px-3 py-1.5 @md/info:px-4 @md/info:py-2 rounded-lg border hover:bg-accent transition-colors text-xs @md/info:text-sm"
-                                            >
-                                                YouTube
                                             </Link>
                                         )}
                                     </div>

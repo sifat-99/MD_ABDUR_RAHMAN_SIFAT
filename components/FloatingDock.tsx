@@ -1,17 +1,8 @@
-import { defineQuery } from "next-sanity";
-import { sanityFetch } from "@/sanity/lib/live";
+import { getNavigation } from "@/lib/db-service";
 import { FloatingDockClient } from "./FloatingDockClient";
 
-const NAVIGATION_QUERY =
-  defineQuery(`*[_type == "navigation"] | order(order asc){
-  title,
-  href,
-  icon,
-  isExternal
-}`);
-
 export async function FloatingDock() {
-  const { data: navItems } = await sanityFetch({ query: NAVIGATION_QUERY });
+  const navItems = await getNavigation();
 
   if (!navItems || navItems.length === 0) {
     return null;

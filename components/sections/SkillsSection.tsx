@@ -1,29 +1,18 @@
-import { defineQuery } from "next-sanity";
-import { sanityFetch } from "@/sanity/lib/live";
+import { getSkills } from "@/lib/db-service";
 import { SkillsChart } from "./SkillsChart";
 
-const SKILLS_QUERY =
-  defineQuery(`*[_type == "skill"] | order(category asc, order asc){
-  name,
-  category,
-  proficiency,
-  percentage,
-  yearsOfExperience,
-  color
-}`);
-
 export async function SkillsSection() {
-  const { data: skills } = await sanityFetch({ query: SKILLS_QUERY });
+  const skills = await getSkills();
 
   if (!skills || skills.length === 0) {
     return null;
   }
 
   return (
-    <section id="skills" className="py-20 px-6 bg-muted/30">
-      <div className="container mx-auto max-w-7xl">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+    <section id="skills" className="py-6 sm:py-8 md:py-10 bg-muted/30">
+      <div className="w-full max-w-[2200px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 2xl:px-16">
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-3">
             Skills & Expertise
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
