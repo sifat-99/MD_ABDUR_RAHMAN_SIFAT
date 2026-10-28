@@ -1,4 +1,4 @@
-import { MongoClient } from "mongodb";
+import mongoose from "mongoose";
 
 const RTDB_URL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.replace(/\/$/, "");
 const STORAGE_BUCKET = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
@@ -81,17 +81,18 @@ async function runDiagnostics() {
   // 4. Test MongoDB Atlas
   console.log("\n4. Testing MongoDB Atlas Backup...");
   try {
-    const client = new MongoClient(process.env.MONGODB_URI || "");
-    await client.connect();
-    const db = client.db();
-    const collections = await db.listCollections().toArray();
-    console.log("   ✅ MongoDB Atlas is CONNECTED! DB Name:", db.databaseName);
-    console.log("   Collections found:", collections.length);
-    for (const c of collections.slice(0, 5)) {
-      const count = await db.collection(c.name).countDocuments();
-      console.log(`     - ${c.name}: ${count} documents`);
+    await mongoose.connect(process.env.MONGODB_URI || "");
+    const db = mongoose.connection.db;
+    if (db) {
+      const collections = await db.listCollections().toArray();
+      console.log("   ✅ MongoDB Atlas is CONNECTED! DB Name:", db.databaseName);
+      console.log("   Collections found:", collections.length);
+      for (const c of collections.slice(0, 5)) {
+        const count = await db.collection(c.name).countDocuments();
+        console.log(`     - ${c.name}: ${count} documents`);
+      }
     }
-    await client.close();
+    await mongoose.disconnect();
   } catch (err: any) {
     console.log("   ❌ MongoDB Atlas connection error:", err.message);
   }

@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
-    "src_backup"
+    "src_backup",
+    "scripts"
   ]
 }
