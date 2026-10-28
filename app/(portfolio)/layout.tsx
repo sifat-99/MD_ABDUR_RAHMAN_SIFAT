@@ -10,6 +10,7 @@ import SidebarToggle from "@/components/SidebarToggle";
 import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { GlobalBackgroundGrid } from "@/components/GlobalBackgroundGrid";
 import { getSiteSettings, getProfile } from "@/lib/db-service";
 import { generateThemeCss, getFontSchemeById } from "@/lib/theme-presets";
 
@@ -257,7 +258,8 @@ export default async function RootLayout({
             >
               <SmoothScrollProvider initialConfig={settings?.smoothScrollConfig}>
                 <SidebarProvider defaultOpen={false}>
-                  <SidebarInset className="bg-transparent">{children}</SidebarInset>
+                  <GlobalBackgroundGrid />
+                  <SidebarInset className="bg-transparent relative z-10">{children}</SidebarInset>
 
                   {!isMaintenance && (
                     <>

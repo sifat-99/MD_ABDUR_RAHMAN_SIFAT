@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { BackgroundRippleEffect } from "@/components/ui/background-ripple-effect";
 import { LayoutTextFlip } from "@/components/ui/layout-text-flip";
 import { ThreeDName } from "@/components/ui/ThreeDName";
 import { getProfile } from "@/lib/db-service";
@@ -17,14 +16,6 @@ export async function HeroSection() {
       id="home"
       className="relative min-h-[85vh] lg:min-h-screen flex items-center justify-center pt-20 pb-8 sm:pt-24 sm:pb-10 lg:pt-6 lg:pb-10 overflow-hidden"
     >
-      {/* Background Ripple Effect - Adaptive grid sizing for mobile & desktop to keep DOM lean */}
-      <div className="hidden sm:block">
-        <BackgroundRippleEffect rows={8} cols={27} cellSize={56} />
-      </div>
-      <div className="block sm:hidden">
-        <BackgroundRippleEffect rows={5} cols={10} cellSize={38} />
-      </div>
-
       <div className="relative z-10 w-full max-w-[2000px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 2xl:px-16">
         <div className="@container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
