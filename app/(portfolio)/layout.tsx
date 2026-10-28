@@ -82,6 +82,9 @@ export async function generateMetadata(): Promise<Metadata> {
         "max-snippet": -1,
       },
     },
+    verification: {
+      google: "NXVdy7UWK_pQV-yMBBat-ofExhufymr_t5sxidWml4g",
+    },
     icons: {
       icon: [
         { url: "/favicon.ico", sizes: "any" },
@@ -222,6 +225,11 @@ export default async function RootLayout({
             <style
               id="dynamic-theme-palette"
               dangerouslySetInnerHTML={{ __html: themeCss }}
+            />
+            {/* Google Search Console Ownership Verification */}
+            <meta
+              name="google-site-verification"
+              content="NXVdy7UWK_pQV-yMBBat-ofExhufymr_t5sxidWml4g"
             />
             {/* Schema.org Person & WebSite JSON-LD for Google Knowledge Panel & SEO */}
             <script
