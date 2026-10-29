@@ -1,7 +1,6 @@
 import { IconExternalLink } from "@tabler/icons-react";
 import Image from "next/image";
 import Link from "next/link";
-import { CometCard } from "@/components/ui/comet-card";
 import { getCertifications } from "@/lib/db-service";
 
 export async function CertificationsSection() {
@@ -41,11 +40,9 @@ export async function CertificationsSection() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 items-stretch">
                     {certifications.map((cert, index) => (
-                        <CometCard
+                        <div
                             key={`${cert.id || index}`}
-                            rotateDepth={6}
-                            translateDepth={8}
-                            className="w-full h-full flex flex-col"
+                            className="w-full h-full flex flex-col transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl"
                         >
                             {/* Outer Frame with Uniform Height */}
                             <div
@@ -205,7 +202,7 @@ export async function CertificationsSection() {
                                     </div>
                                 </div>
                             </div>
-                        </CometCard>
+                        </div>
                     ))}
                 </div>
             </div>

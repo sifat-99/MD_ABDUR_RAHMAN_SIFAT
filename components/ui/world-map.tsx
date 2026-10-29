@@ -1,6 +1,5 @@
 "use client";
 
-import DottedMap from "dotted-map";
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
@@ -19,23 +18,16 @@ export default function WorldMap({
     lineColor = "#0ea5e9",
 }: MapProps) {
     const svgRef = useRef<SVGSVGElement>(null);
-    const { theme } = useTheme();
-    // Fix hydration mismatch by generating map only after mount
-    const [svgMap, setSvgMap] = useState<string>("");
+    const { theme, resolvedTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        const map = new DottedMap({ height: 100, grid: "diagonal" });
-        const svg = map.getSVG({
-            radius: 0.22,
-            color: theme === "dark" ? "#FFFFFF40" : "#00000040",
-            shape: "circle",
-            backgroundColor: "transparent",
-        });
-        setSvgMap(svg);
-    }, [theme]);
+        setMounted(true);
+    }, []);
 
-    // Don't render until map is generated to avoid mismatch
-    if (!svgMap) return null;
+    // Static pre-generated SVGs: eliminates 750ms CPU blocking and 500KB bundle
+    const isDark = (resolvedTheme || theme) !== "light";
+    const mapSrc = isDark ? "/world-map-dark.svg" : "/world-map-light.svg";
 
     const projectPoint = (lat: number, lng: number) => {
         const x = (lng + 180) * (800 / 360);
@@ -52,7 +44,6 @@ export default function WorldMap({
         return `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
     };
 
-    // Create unique identifiers for dots to avoid index-based keys
     const dotsWithIds = dots.map((dot, i) => ({
         ...dot,
         id: `dot-${dot.start.lat}-${dot.start.lng}-${dot.end.lat}-${dot.end.lng}-${i}`,
@@ -61,133 +52,142 @@ export default function WorldMap({
     return (
         <div className="w-full aspect-[2/1] rounded-lg relative font-sans">
             <Image
-                src={`data:image/svg+xml;utf8,${encodeURIComponent(svgMap)}`}
+                src={mapSrc}
                 className="h-full w-full [mask-image:linear-gradient(to_bottom,transparent,white_10%,white_90%,transparent)] pointer-events-none select-none"
                 alt="world map showing global connectivity"
                 height={495}
                 width={1056}
                 draggable={false}
+                priority={false}
+                loading="lazy"
             />
-            <svg
-                ref={svgRef}
-                viewBox="0 0 800 400"
-                className="w-full h-full absolute inset-0 pointer-events-none select-none"
-                aria-label="Interactive world map with connection paths"
-            >
-                <title>World Map Connections</title>
-                {dotsWithIds.map((dot) => {
-                    const startPoint = projectPoint(dot.start.lat, dot.start.lng);
-                    const endPoint = projectPoint(dot.end.lat, dot.end.lng);
-                    const dotIndex = dots.indexOf(
-                        dots.find(
-                            (d) =>
-                                d.start.lat === dot.start.lat &&
-                                d.start.lng === dot.start.lng &&
-                                d.end.lat === dot.end.lat &&
-                                d.end.lng === dot.end.lng,
-                        ) as (typeof dots)[0],
-                    );
-                    return (
-                        <g key={`path-group-${dot.id}`}>
-                            <motion.path
-                                d={createCurvedPath(startPoint, endPoint)}
-                                fill="none"
-                                stroke="url(#path-gradient)"
-                                strokeWidth="1"
-                                initial={{
-                                    pathLength: 0,
-                                }}
-                                animate={{
-                                    pathLength: 1,
-                                }}
-                                transition={{
-                                    duration: 1,
-                                    delay: 0.5 * dotIndex,
-                                    ease: "easeOut",
-                                }}
-                            />
-                        </g>
-                    );
-                })}
+            {mounted && (
+                <svg
+                    ref={svgRef}
+                    viewBox="0 0 800 400"
+                    className="w-full h-full absolute inset-0 pointer-events-none select-none"
+                    aria-label="Interactive world map with connection paths"
+                >
+                    <title>World Map Connections</title>
+                    {dotsWithIds.map((dot) => {
+                        const startPoint = projectPoint(dot.start.lat, dot.start.lng);
+                        const endPoint = projectPoint(dot.end.lat, dot.end.lng);
+                        const dotIndex = dots.indexOf(
+                            dots.find(
+                                (d) =>
+                                    d.start.lat === dot.start.lat &&
+                                    d.start.lng === dot.start.lng &&
+                                    d.end.lat === dot.end.lat &&
+                                    d.end.lng === dot.end.lng,
+                            ) as (typeof dots)[0],
+                        );
+                        return (
+                            <g key={`path-group-${dot.id}`}>
+                                <motion.path
+                                    d={createCurvedPath(startPoint, endPoint)}
+                                    fill="none"
+                                    stroke="url(#path-gradient)"
+                                    strokeWidth="1"
+                                    initial={{
+                                        pathLength: 0,
+                                    }}
+                                    animate={{
+                                        pathLength: 1,
+                                    }}
+                                    transition={{
+                                        duration: 1,
+                                        delay: 0.5 * dotIndex,
+                                        ease: "easeOut",
+                                    }}
+                                />
+                            </g>
+                        );
+                    })}
 
-                <defs>
-                    <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="white" stopOpacity="0" />
-                        <stop offset="5%" stopColor={lineColor} stopOpacity="1" />
-                        <stop offset="95%" stopColor={lineColor} stopOpacity="1" />
-                        <stop offset="100%" stopColor="white" stopOpacity="0" />
-                    </linearGradient>
-                </defs>
+                    <defs>
+                        <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="white" stopOpacity="0" />
+                            <stop offset="5%" stopColor={lineColor} stopOpacity="1" />
+                            <stop offset="95%" stopColor={lineColor} stopOpacity="1" />
+                            <stop offset="100%" stopColor="white" stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
 
-                {dotsWithIds.map((dot) => (
-                    <g key={`points-group-${dot.id}`}>
-                        <g key={`start-${dot.id}`}>
-                            <circle
-                                cx={projectPoint(dot.start.lat, dot.start.lng).x}
-                                cy={projectPoint(dot.start.lat, dot.start.lng).y}
-                                r="2"
-                                fill={lineColor}
-                            />
-                            <circle
-                                cx={projectPoint(dot.start.lat, dot.start.lng).x}
-                                cy={projectPoint(dot.start.lat, dot.start.lng).y}
-                                r="2"
-                                fill={lineColor}
-                                opacity="0.5"
-                            >
-                                <animate
-                                    attributeName="r"
-                                    from="2"
-                                    to="8"
-                                    dur="1.5s"
-                                    begin="0s"
-                                    repeatCount="indefinite"
-                                />
-                                <animate
-                                    attributeName="opacity"
-                                    from="0.5"
-                                    to="0"
-                                    dur="1.5s"
-                                    begin="0s"
-                                    repeatCount="indefinite"
-                                />
-                            </circle>
-                        </g>
-                        <g key={`end-${dot.id}`}>
-                            <circle
-                                cx={projectPoint(dot.end.lat, dot.end.lng).x}
-                                cy={projectPoint(dot.end.lat, dot.end.lng).y}
-                                r="2"
-                                fill={lineColor}
-                            />
-                            <circle
-                                cx={projectPoint(dot.end.lat, dot.end.lng).x}
-                                cy={projectPoint(dot.end.lat, dot.end.lng).y}
-                                r="2"
-                                fill={lineColor}
-                                opacity="0.5"
-                            >
-                                <animate
-                                    attributeName="r"
-                                    from="2"
-                                    to="8"
-                                    dur="1.5s"
-                                    begin="0s"
-                                    repeatCount="indefinite"
-                                />
-                                <animate
-                                    attributeName="opacity"
-                                    from="0.5"
-                                    to="0"
-                                    dur="1.5s"
-                                    begin="0s"
-                                    repeatCount="indefinite"
-                                />
-                            </circle>
-                        </g>
-                    </g>
-                ))}
-            </svg>
+                    {dotsWithIds.map((dot) => {
+                        const startPoint = projectPoint(dot.start.lat, dot.start.lng);
+                        const endPoint = projectPoint(dot.end.lat, dot.end.lng);
+
+                        return (
+                            <g key={`points-group-${dot.id}`}>
+                                <g key={`start-${dot.id}`}>
+                                    <circle
+                                        cx={startPoint.x}
+                                        cy={startPoint.y}
+                                        r="2"
+                                        fill={lineColor}
+                                    />
+                                    <circle
+                                        cx={startPoint.x}
+                                        cy={startPoint.y}
+                                        r="2"
+                                        fill={lineColor}
+                                        opacity="0.5"
+                                    >
+                                        <animate
+                                            attributeName="r"
+                                            from="2"
+                                            to="8"
+                                            dur="1.5s"
+                                            begin="0s"
+                                            repeatCount="indefinite"
+                                        />
+                                        <animate
+                                            attributeName="opacity"
+                                            from="0.5"
+                                            to="0"
+                                            dur="1.5s"
+                                            begin="0s"
+                                            repeatCount="indefinite"
+                                        />
+                                    </circle>
+                                </g>
+                                <g key={`end-${dot.id}`}>
+                                    <circle
+                                        cx={endPoint.x}
+                                        cy={endPoint.y}
+                                        r="2"
+                                        fill={lineColor}
+                                    />
+                                    <circle
+                                        cx={endPoint.x}
+                                        cy={endPoint.y}
+                                        r="2"
+                                        fill={lineColor}
+                                        opacity="0.5"
+                                    >
+                                        <animate
+                                            attributeName="r"
+                                            from="2"
+                                            to="8"
+                                            dur="1.5s"
+                                            begin="0s"
+                                            repeatCount="indefinite"
+                                        />
+                                        <animate
+                                            attributeName="opacity"
+                                            from="0.5"
+                                            to="0"
+                                            dur="1.5s"
+                                            begin="0s"
+                                            repeatCount="indefinite"
+                                        />
+                                    </circle>
+                                </g>
+                            </g>
+                        );
+                    })}
+                </svg>
+            )}
         </div>
     );
 }

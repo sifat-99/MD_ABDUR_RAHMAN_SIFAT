@@ -247,6 +247,23 @@ html {
     font-style: italic !important;
 }
 
+@keyframes shockwave {
+    0% {
+        width: 0px;
+        height: 0px;
+        opacity: 0.9;
+    }
+    100% {
+        width: 600px;
+        height: 600px;
+        opacity: 0;
+    }
+}
+
+.animate-shockwave {
+    animation: shockwave 0.65s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+}
+
 /* Ripple effect animation */
 @keyframes cell-ripple {
     0% {
@@ -474,5 +491,14 @@ html.lenis body {
 .lenis.lenis-scrolling iframe {
     pointer-events: none;
 }
+
+/* ==========================================================================
+   Performance Optimization: Defer layout & paint of below-the-fold sections
+   ========================================================================== */
+section:not(#home) {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 750px;
+}
+
 
 

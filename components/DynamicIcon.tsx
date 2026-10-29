@@ -1,7 +1,78 @@
 "use client";
 
-import * as TablerIcons from "@tabler/icons-react";
-import { IconQuestionMark } from "@tabler/icons-react";
+import React from "react";
+import {
+  IconHome,
+  IconUser,
+  IconBriefcase,
+  IconCode,
+  IconSparkles,
+  IconTools,
+  IconSchool,
+  IconCertificate,
+  IconTrophy,
+  IconArticle,
+  IconMessageDots,
+  IconMail,
+  IconMenu2,
+  IconX,
+  IconRocket,
+  IconBook,
+  IconBrandGithub,
+  IconBrandLinkedin,
+  IconBrandTwitter,
+  IconWorld,
+  IconLayersLinked as IconLayers,
+  IconCpu,
+  IconDeviceDesktop,
+  IconPalette,
+  IconServer,
+  IconDatabase,
+  IconQuestionMark,
+  IconPhone,
+  IconMapPin,
+  IconCalendar,
+  IconExternalLink,
+  IconFolder,
+  IconTerminal2 as IconTerminal,
+  type TablerIcon,
+} from "@tabler/icons-react";
+
+// Explicit curated icon registry: avoids bundling all 5,000+ Tabler icons (saves ~2.8MB JS)
+const ICON_MAP: Record<string, TablerIcon> = {
+  IconHome,
+  IconUser,
+  IconBriefcase,
+  IconCode,
+  IconSparkles,
+  IconTools,
+  IconSchool,
+  IconCertificate,
+  IconTrophy,
+  IconArticle,
+  IconMessageDots,
+  IconMail,
+  IconMenu2,
+  IconX,
+  IconRocket,
+  IconBook,
+  IconBrandGithub,
+  IconBrandLinkedin,
+  IconBrandTwitter,
+  IconWorld,
+  IconLayers,
+  IconCpu,
+  IconDeviceDesktop,
+  IconPalette,
+  IconServer,
+  IconDatabase,
+  IconPhone,
+  IconMapPin,
+  IconCalendar,
+  IconExternalLink,
+  IconFolder,
+  IconTerminal,
+};
 
 interface DynamicIconProps {
   iconName: string;
@@ -12,17 +83,8 @@ export function DynamicIcon({
   iconName,
   className = "h-full w-full text-current",
 }: DynamicIconProps) {
-  // Dynamically look up the icon component by name from the Tabler Icons library
-  // This allows us to load any icon based on CMS data without importing each one individually
-  // The type cast is necessary because TypeScript can't infer the dynamic lookup at compile time
-  const Icon = (
-    TablerIcons as unknown as Record<
-      string,
-      React.ComponentType<{ className?: string }>
-    >
-  )[iconName];
+  const Icon = ICON_MAP[iconName];
 
-  // If the icon exists, render it; otherwise show a fallback question mark icon
   return Icon ? (
     <Icon className={className} />
   ) : (

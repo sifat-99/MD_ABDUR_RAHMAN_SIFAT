@@ -42,6 +42,7 @@ export function ThreeDName({
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) return;
     const rect = containerRef.current.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
@@ -54,6 +55,7 @@ export function ThreeDName({
   };
 
   const handleMouseEnter = () => {
+    if (typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches) return;
     setIsHovered(true);
   };
 

@@ -56,8 +56,12 @@ export function SmoothScrollProvider({
   }, []);
 
   useEffect(() => {
-    // If disabled, destroy any existing Lenis instance and restore native scrolling
-    if (config.enabled === false) {
+    // If disabled or on mobile touch devices, use native high-performance OS scrolling (0 CPU overhead)
+    const isMobileDevice =
+      typeof window !== "undefined" &&
+      (window.innerWidth < 768 || window.matchMedia("(pointer: coarse)").matches);
+
+    if (config.enabled === false || isMobileDevice) {
       if (lenisRef.current) {
         lenisRef.current.destroy();
         lenisRef.current = null;
