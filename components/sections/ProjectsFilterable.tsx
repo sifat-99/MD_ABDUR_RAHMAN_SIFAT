@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setSelectedProjectCategory, setProjectSearchTerm } from "@/store/slices/uiSlice";
 import type { Project } from "@/types/portfolio";
 import { Search, Layers } from "lucide-react";
 
@@ -13,9 +11,8 @@ interface ProjectsFilterableProps {
 }
 
 export function ProjectsFilterable({ initialProjects }: ProjectsFilterableProps) {
-  const dispatch = useAppDispatch();
-  const selectedCategory = useAppSelector((state) => state.ui.selectedProjectCategory);
-  const searchTerm = useAppSelector((state) => state.ui.projectSearchTerm);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Extract unique categories dynamically
   const categories = useMemo(() => {
@@ -55,7 +52,7 @@ export function ProjectsFilterable({ initialProjects }: ProjectsFilterableProps)
             return (
               <button
                 key={cat}
-                onClick={() => dispatch(setSelectedProjectCategory(cat))}
+                onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all ${
                   isActive
                     ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25 scale-105"
@@ -75,7 +72,7 @@ export function ProjectsFilterable({ initialProjects }: ProjectsFilterableProps)
             type="text"
             placeholder="Search projects or tech..."
             value={searchTerm}
-            onChange={(e) => dispatch(setProjectSearchTerm(e.target.value))}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-3 py-1.5 rounded-full text-xs md:text-sm bg-background/60 backdrop-blur-md border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder:text-muted-foreground"
           />
         </div>
@@ -88,8 +85,8 @@ export function ProjectsFilterable({ initialProjects }: ProjectsFilterableProps)
           <p className="text-muted-foreground text-sm">No projects matched your criteria.</p>
           <button
             onClick={() => {
-              dispatch(setSelectedProjectCategory("all"));
-              dispatch(setProjectSearchTerm(""));
+              setSelectedCategory("all");
+              setSearchTerm("");
             }}
             className="mt-3 text-xs text-primary hover:underline"
           >

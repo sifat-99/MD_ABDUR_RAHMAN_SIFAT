@@ -1,7 +1,6 @@
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
-import { IconLogout, IconMenu2, IconX } from "@tabler/icons-react";
+import { IconMenu2, IconX } from "@tabler/icons-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { DynamicIcon } from "./DynamicIcon";
@@ -39,8 +38,6 @@ const getVisibleLinks = (links: DockLink[], maxItems: number) => {
 };
 
 export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
-  const { user, signOut } = useAuth();
-  const isSignedIn = Boolean(user);
   const { open, isMobile, openMobile } = useSidebar();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopMoreMenuOpen, setDesktopMoreMenuOpen] = useState(false);
@@ -120,15 +117,6 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
       icon: <DynamicIcon iconName={item.icon || "IconHome"} className="w-full h-full text-current" />,
       isExternal: item.isExternal,
     })),
-    ...(isSignedIn && !isSidebarOpen
-      ? [
-          {
-            title: "Sign Out",
-            icon: <IconLogout className="h-full w-full text-current" />,
-            onClick: () => signOut(),
-          },
-        ]
-      : []),
   ];
 
   const desktop = getVisibleLinks(links, MAX_VISIBLE_ITEMS_DESKTOP);

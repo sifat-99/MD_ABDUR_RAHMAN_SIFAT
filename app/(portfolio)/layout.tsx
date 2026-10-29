@@ -1,5 +1,3 @@
-import { AuthProvider } from "@/context/AuthContext";
-import { StoreProvider } from "@/store/StoreProvider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
@@ -205,10 +203,8 @@ export default async function RootLayout({
   const isMaintenance = settings?.maintenanceMode === true;
 
   return (
-    <AuthProvider>
-      <StoreProvider>
-        <html lang="en" suppressHydrationWarning>
-          <head>
+    <html lang="en" suppressHydrationWarning>
+      <head>
             <link rel="preconnect" href="https://fonts.googleapis.com" />
             <link
               rel="preconnect"
@@ -286,7 +282,5 @@ export default async function RootLayout({
             </ThemeProvider>
           </body>
         </html>
-      </StoreProvider>
-    </AuthProvider>
   );
 }

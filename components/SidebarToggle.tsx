@@ -1,15 +1,10 @@
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
 import { MessageSquare, Sparkles } from "lucide-react";
 import { useSidebar } from "./ui/sidebar";
-import { useAppDispatch } from "@/store/hooks";
-import { toggleChatDrawer } from "@/store/slices/uiSlice";
 
 function SidebarToggle() {
   const { toggleSidebar, open, isMobile, openMobile } = useSidebar();
-  const { user } = useAuth();
-  const dispatch = useAppDispatch();
 
   const isSidebarOpen = isMobile ? openMobile : open;
 
@@ -48,7 +43,6 @@ function SidebarToggle() {
         type="button"
         onClick={() => {
           toggleSidebar();
-          dispatch(toggleChatDrawer());
         }}
         className={buttonStyles}
         aria-label="Chat with AI Twin"

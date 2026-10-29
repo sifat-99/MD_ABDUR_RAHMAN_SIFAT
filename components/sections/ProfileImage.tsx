@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
 import { MessageCircle, X } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -20,7 +19,6 @@ export function ProfileImage({
   const [isHovered, setIsHovered] = useState(false);
   const [imgSrc, setImgSrc] = useState(imageUrl || "/Sifat.png");
   const { toggleSidebar, open } = useSidebar();
-  const { user } = useAuth();
 
   return (
     <button

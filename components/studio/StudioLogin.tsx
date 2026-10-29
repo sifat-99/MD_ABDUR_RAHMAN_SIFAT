@@ -20,7 +20,12 @@ export function StudioLogin() {
     try {
       await signInWithEmail(email, password);
     } catch (err: any) {
-      setError(err.message || "Failed to sign in. Please verify your credentials.");
+      if (err.code === "auth/unauthorized-domain" || err.message?.includes("unauthorized-domain")) {
+        const domain = typeof window !== "undefined" ? window.location.hostname : "sifat.online";
+        setError(`Unauthorized Domain: Please add "${domain}" in Firebase Console -> Authentication -> Settings -> Authorized domains.`);
+      } else {
+        setError(err.message || "Failed to sign in. Please verify your credentials.");
+      }
     } finally {
       setLoading(false);
     }
@@ -32,7 +37,12 @@ export function StudioLogin() {
     try {
       await signInWithGoogle();
     } catch (err: any) {
-      setError(err.message || "Failed to sign in with Google.");
+      if (err.code === "auth/unauthorized-domain" || err.message?.includes("unauthorized-domain")) {
+        const domain = typeof window !== "undefined" ? window.location.hostname : "sifat.online";
+        setError(`Unauthorized Domain: Please add "${domain}" in Firebase Console -> Authentication -> Settings -> Authorized domains.`);
+      } else {
+        setError(err.message || "Failed to sign in with Google.");
+      }
     } finally {
       setLoading(false);
     }
