@@ -82,15 +82,22 @@ export function NavigationManager() {
   const commonIcons = [
     "IconHome",
     "IconUser",
-    "IconCode",
     "IconBriefcase",
-    "IconRocket",
+    "IconCode",
+    "IconBulb",
+    "IconTools",
+    "IconSchool",
+    "IconCertificate",
+    "IconTrophy",
+    "IconNews",
+    "IconMessageCircle",
     "IconMail",
-    "IconBook",
-    "IconArticle",
     "IconBrandGithub",
     "IconBrandLinkedin",
-    "IconBrandTwitter",
+    "IconBrandX",
+    "IconRocket",
+    "IconBook",
+    "IconSparkles",
   ];
 
   if (loading) return <StudioLoader label="Loading Navigation..." sublabel="Fetching dock links and actions" />;

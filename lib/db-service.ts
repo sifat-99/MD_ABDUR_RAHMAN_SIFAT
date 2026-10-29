@@ -556,6 +556,29 @@ export async function deleteBlog(id: string): Promise<boolean> {
   return dualDeleteEntity(`blogs/${id}`, MongoBlog, "blogs", id);
 }
 
+export async function getBlogBySlug(slug: string): Promise<Blog | null> {
+  try {
+    const blogs = await getBlogs();
+    const decodedSlug = decodeURIComponent(slug);
+    const found = blogs.find(
+      (b) => b.slug === decodedSlug || b.id === decodedSlug || b.slug === slug || b.id === slug
+    );
+    if (found) return found;
+
+    await connectToDatabase();
+    const doc = await MongoBlog.findOne({
+      $or: [{ slug: decodedSlug }, { id: decodedSlug }, { slug }, { id: slug }],
+    }).lean();
+    if (doc) {
+      const { _id, __v, createdAt, updatedAt, ...rest }: any = doc;
+      return rest as Blog;
+    }
+  } catch (error) {
+    console.error(`Error fetching blog by slug ${slug}:`, error);
+  }
+  return null;
+}
+
 // -------------------------------------------------------------
 // 9. SERVICES
 // -------------------------------------------------------------

@@ -114,7 +114,13 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
     ...navItems.map((item) => ({
       title: item.title || "",
       href: item.href || "#",
-      icon: <DynamicIcon iconName={item.icon || "IconHome"} className="w-full h-full text-current" />,
+      icon: (
+        <DynamicIcon
+          iconName={item.icon || "IconHome"}
+          fallbackTitle={item.title || ""}
+          className="w-full h-full text-current"
+        />
+      ),
       isExternal: item.isExternal,
     })),
   ];
@@ -307,9 +313,7 @@ function smoothScrollToSection(targetHref: string) {
 
   const isCurrentPage =
     window.location.pathname === "/" ||
-    window.location.pathname === "" ||
-    targetHref.startsWith("#") ||
-    targetHref.startsWith("/#");
+    window.location.pathname === "";
 
   if (!isCurrentPage) {
     window.location.href = `/${targetHash}`;
