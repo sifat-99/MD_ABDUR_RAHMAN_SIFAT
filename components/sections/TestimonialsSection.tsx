@@ -1,5 +1,17 @@
-import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
+import dynamic from "next/dynamic";
 import { getTestimonials } from "@/lib/db-service";
+
+const AnimatedTestimonials = dynamic(
+  () =>
+    import("@/components/ui/animated-testimonials").then(
+      (m) => m.AnimatedTestimonials
+    ),
+  {
+    loading: () => (
+      <div className="h-80 w-full max-w-4xl mx-auto animate-pulse bg-card/40 rounded-2xl" />
+    ),
+  }
+);
 
 export async function TestimonialsSection() {
   const testimonials = await getTestimonials();

@@ -17,11 +17,13 @@ export const revalidate = 60;
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -212,11 +214,19 @@ export default async function RootLayout({
               crossOrigin="anonymous"
             />
             {fontScheme.googleFontQuery && (
-              <link
-                id="dynamic-google-font"
-                rel="stylesheet"
-                href={`https://fonts.googleapis.com/css2?${fontScheme.googleFontQuery}&display=swap`}
-              />
+              <>
+                <link
+                  id="dynamic-google-font-preload"
+                  rel="preload"
+                  as="style"
+                  href={`https://fonts.googleapis.com/css2?${fontScheme.googleFontQuery}&display=swap`}
+                />
+                <link
+                  id="dynamic-google-font"
+                  rel="stylesheet"
+                  href={`https://fonts.googleapis.com/css2?${fontScheme.googleFontQuery}&display=swap`}
+                />
+              </>
             )}
             <style
               id="dynamic-theme-palette"
