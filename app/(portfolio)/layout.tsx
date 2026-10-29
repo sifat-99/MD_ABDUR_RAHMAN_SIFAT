@@ -275,18 +275,8 @@ export default async function RootLayout({
                     </>
                   )}
 
-                  {/* Mode Toggle - Desktop: bottom right next to AI chat, Mobile: top right next to burger menu */}
-                  <div
-                    className={`fixed ${
-                      isMaintenance
-                        ? "top-4 right-4"
-                        : "md:bottom-6 md:right-24 top-4 right-16 md:top-auto md:left-auto"
-                    } z-30`}
-                  >
-                    <div className="w-10 h-10 md:w-12 md:h-12">
-                      <ModeToggleWrapper />
-                    </div>
-                  </div>
+                  {/* Mode Toggle - Animated alongside AI sidebar drawer on desktop */}
+                  <ModeToggleWrapper isMaintenance={isMaintenance} />
                 </SidebarProvider>
               </SmoothScrollProvider>
             </ThemeProvider>

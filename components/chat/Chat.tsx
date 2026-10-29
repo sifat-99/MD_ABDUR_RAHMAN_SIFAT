@@ -182,8 +182,14 @@ export function Chat({
                         <p className="text-xs text-muted-foreground">Digital Twin</p>
                     </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-                    <X className="w-4 h-4" />
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleSidebar}
+                    className="group/close relative w-9 h-9 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground transition-all duration-300 cursor-pointer flex items-center justify-center"
+                    aria-label="Close chat"
+                >
+                    <X className="w-4 h-4 transition-transform duration-500 ease-out group-hover/close:rotate-180 group-hover/close:scale-110" />
                 </Button>
             </div>
 
@@ -261,13 +267,8 @@ export function Chat({
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Disclaimer */}
-            <div className="px-4 py-2 text-[10px] text-center text-muted-foreground bg-background/50 backdrop-blur-sm border-t border-border/50">
-                AI-generated content. Verify important details.
-            </div>
-
-            {/* Input Area */}
-            <form onSubmit={handleSubmit} className="p-4 border-t border-border bg-card relative">
+            {/* Input & Disclaimer Area */}
+            <div className="border-t border-border bg-card/95 backdrop-blur-md relative p-4 pb-6 sm:pb-8 space-y-2.5">
                 {/* Suggestions Popup */}
                 {visibleSuggestions.length > 0 && (
                     <div className="absolute bottom-full left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-border shadow-lg">
@@ -280,9 +281,9 @@ export function Chat({
                                     key={index}
                                     type="button"
                                     onClick={() => sendMessage(item.prompt)}
-                                    className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors text-left"
+                                    className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors text-left cursor-pointer"
                                 >
-                                    <item.icon className="w-3 h-3" />
+                                    <item.icon className="w-3.5 h-3.5" />
                                     <span>{item.label}</span>
                                 </button>
                             ))}
@@ -290,18 +291,28 @@ export function Chat({
                     </div>
                 )}
 
-                <div className="flex gap-2">
+                <form onSubmit={handleSubmit} className="flex gap-2 items-center">
                     <Input
                         value={input}
                         onChange={handleInputChange}
                         placeholder="Type a message..."
-                        className="flex-1"
+                        className="flex-1 bg-background border-border/80 rounded-xl px-3.5 py-2.5 text-sm focus-visible:ring-primary/40 shadow-2xs h-10"
                     />
-                    <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+                    <Button
+                        type="submit"
+                        size="icon"
+                        disabled={isLoading || !input.trim()}
+                        className="w-10 h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-md shadow-primary/20 shrink-0 transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
+                        aria-label="Send message"
+                    >
                         <Send className="w-4 h-4" />
                     </Button>
-                </div>
-            </form>
+                </form>
+
+                <p className="text-[10px] text-center text-muted-foreground/80 tracking-tight select-none">
+                    AI-generated content. Verify important details.
+                </p>
+            </div>
         </div >
     );
 }

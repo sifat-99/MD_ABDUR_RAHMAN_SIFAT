@@ -228,7 +228,7 @@ function Sidebar({
       <div
         data-slot="sidebar-container"
         className={cn(
-          "fixed inset-y-0 z-30 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
+          "fixed inset-y-0 z-50 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-300 ease-in-out md:flex",
           side === "left"
             ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -303,17 +303,35 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
   );
 }
 
-function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
+function SidebarInset({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"main">) {
+  const { open, isMobile, setOpen } = useSidebar();
+  const isShifted = !isMobile && open;
+
   return (
     <main
       data-slot="sidebar-inset"
       className={cn(
-        "bg-background relative flex w-full flex-1 flex-col",
+        "bg-background relative flex w-full flex-1 flex-col transition-transform duration-300 ease-in-out",
+        isShifted && "md:-translate-x-[var(--sidebar-width)]",
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
         className,
       )}
       {...props}
-    />
+    >
+      {children}
+      {/* Subtle backdrop overlay on desktop when drawer pushes content */}
+      {isShifted && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-30 bg-black/15 dark:bg-black/35 backdrop-blur-[1px] transition-opacity duration-300 cursor-pointer"
+          aria-label="Close sidebar"
+        />
+      )}
+    </main>
   );
 }
 
