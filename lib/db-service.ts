@@ -840,6 +840,15 @@ export async function syncFirebaseToMongo(): Promise<{
       counts.siteSettings = 1;
     }
 
+    // Update sync metadata in both
+    const syncNow = new Date().toISOString();
+    await db.collection("sync_metadata").replaceOne(
+      { id: "database_sync_status" },
+      { id: "database_sync_status", lastSyncedFromFirebase: syncNow, lastUpdated: syncNow },
+      { upsert: true }
+    );
+    await fbSet("_sync_meta/last_updated", syncNow);
+
     revalidatePortfolioCache();
     return {
       success: true,
@@ -916,6 +925,15 @@ export async function syncMongoToFirebase(): Promise<{ success: boolean; message
       const { _id, __v, ...s } = settings as any;
       await fbSet("siteSettings/singleton-siteSettings", s);
     }
+
+    // Update sync metadata in both
+    const syncNow = new Date().toISOString();
+    await fbSet("_sync_meta/last_updated", syncNow);
+    await db.collection("sync_metadata").replaceOne(
+      { id: "database_sync_status" },
+      { id: "database_sync_status", lastSyncedToFirebase: syncNow, lastUpdated: syncNow },
+      { upsert: true }
+    );
 
     revalidatePortfolioCache();
     return { success: true, message: "Successfully synced all data from MongoDB backup to Firebase!" };
@@ -1048,6 +1066,17 @@ export async function syncBothDatabases(): Promise<{
       await fbSet("siteSettings/singleton-siteSettings", s);
     }
 
+    // Update sync metadata in both
+    const now = new Date().toISOString();
+    await fbSet("_sync_meta/last_updated", now);
+    if (db) {
+      await db.collection("sync_metadata").replaceOne(
+        { id: "database_sync_status" },
+        { id: "database_sync_status", lastBothSynced: now, lastUpdated: now },
+        { upsert: true }
+      );
+    }
+
     revalidatePortfolioCache();
 
     return {
@@ -1063,6 +1092,156 @@ export async function syncBothDatabases(): Promise<{
     console.error("[Bi-directional Sync] Error:", error);
     return { success: false, message: error.message || "Failed to run bi-directional sync." };
   }
+}
+
+/**
+ * 4. Get Database Status & Synchronization Information:
+ * Queries real-time connection status, document counts, and latest update timestamps
+ * for both Firebase Realtime Database and MongoDB Atlas.
+ */
+export interface DatabaseSyncStatus {
+  firebase: {
+    connected: boolean;
+    lastUpdated: string | null;
+    totalDocuments: number;
+  };
+  mongodb: {
+    connected: boolean;
+    lastUpdated: string | null;
+    totalDocuments: number;
+  };
+  latestSource: "firebase" | "mongodb" | "equal" | "unknown";
+  diffSeconds: number;
+}
+
+export async function getDatabaseSyncStatus(): Promise<DatabaseSyncStatus> {
+  let fbConnected = false;
+  let fbLastUpdated: string | null = null;
+  let fbCount = 0;
+
+  try {
+    if (RTDB_URL) {
+      const fbMeta = await fbGet<{ last_updated?: string }>("_sync_meta");
+      if (fbMeta && fbMeta.last_updated) {
+        fbLastUpdated = fbMeta.last_updated;
+      }
+
+      const res = await fetch(`${getRtdbEndpoint("")}`, {
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (res.ok) {
+        fbConnected = true;
+        const root = await res.json();
+        if (root && typeof root === "object") {
+          let latestMs = fbLastUpdated ? new Date(fbLastUpdated).getTime() : 0;
+          const rootKeys = Object.keys(root);
+          for (const k of rootKeys) {
+            if (k.startsWith("_")) continue;
+            const v = root[k];
+            if (v && typeof v === "object") {
+              const items = Object.values(v as Record<string, any>);
+              for (const item of items) {
+                if (item && typeof item === "object") {
+                  fbCount++;
+                  const t = new Date(item.updatedAt || item.publishedAt || item.submittedAt || 0).getTime();
+                  if (t > latestMs) {
+                    latestMs = t;
+                    fbLastUpdated = item.updatedAt || item.publishedAt || item.submittedAt;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[getDatabaseSyncStatus] Firebase status error:", err);
+  }
+
+  let mongoConnected = false;
+  let mongoLastUpdated: string | null = null;
+  let mongoCount = 0;
+
+  try {
+    const conn = await connectToDatabase();
+    if (conn && mongoose.connection.db) {
+      mongoConnected = true;
+      const db = mongoose.connection.db;
+      const meta = await db.collection("sync_metadata").findOne({ id: "database_sync_status" });
+      if (meta && meta.lastUpdated) {
+        mongoLastUpdated = meta.lastUpdated;
+      }
+
+      const collections = [
+        "profiles",
+        "sitesettings",
+        "projects",
+        "skills",
+        "experiences",
+        "educations",
+        "certifications",
+        "achievements",
+        "blogs",
+        "services",
+        "testimonials",
+        "navigationitems",
+        "contactsubmissions",
+      ];
+
+      let latestMs = mongoLastUpdated ? new Date(mongoLastUpdated).getTime() : 0;
+      for (const col of collections) {
+        const docs = await db.collection(col).find({}, { projection: { updatedAt: 1, publishedAt: 1 } }).toArray();
+        mongoCount += docs.length;
+        for (const d of docs) {
+          const t = new Date(d.updatedAt || d.publishedAt || 0).getTime();
+          if (t > latestMs) {
+            latestMs = t;
+            mongoLastUpdated = d.updatedAt || d.publishedAt;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[getDatabaseSyncStatus] MongoDB status error:", err);
+  }
+
+  let latestSource: "firebase" | "mongodb" | "equal" | "unknown" = "unknown";
+  let diffSeconds = 0;
+
+  if (fbLastUpdated && mongoLastUpdated) {
+    const fbMs = new Date(fbLastUpdated).getTime();
+    const mongoMs = new Date(mongoLastUpdated).getTime();
+    diffSeconds = Math.round(Math.abs(fbMs - mongoMs) / 1000);
+
+    if (diffSeconds <= 5) {
+      latestSource = "equal";
+    } else if (fbMs > mongoMs) {
+      latestSource = "firebase";
+    } else {
+      latestSource = "mongodb";
+    }
+  } else if (fbLastUpdated) {
+    latestSource = "firebase";
+  } else if (mongoLastUpdated) {
+    latestSource = "mongodb";
+  }
+
+  return {
+    firebase: {
+      connected: fbConnected,
+      lastUpdated: fbLastUpdated,
+      totalDocuments: fbCount,
+    },
+    mongodb: {
+      connected: mongoConnected,
+      lastUpdated: mongoLastUpdated,
+      totalDocuments: mongoCount,
+    },
+    latestSource,
+    diffSeconds,
+  };
 }
 
 // -------------------------------------------------------------
