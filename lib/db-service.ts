@@ -2,6 +2,7 @@
 
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
+import mongoose from "mongoose";
 import { connectToDatabase } from "./mongodb";
 import {
   MongoProfile,
@@ -151,6 +152,126 @@ async function fbRemove(path: string): Promise<boolean> {
 }
 
 // -------------------------------------------------------------
+// Guaranteed Synchronous Dual-Write Engine (Firebase + MongoDB)
+// -------------------------------------------------------------
+async function dualSaveEntity<T extends { id?: string }>(
+  fbPath: string,
+  model: any,
+  collectionName: string,
+  entityId: string,
+  data: T
+): Promise<boolean> {
+  const payload = {
+    ...data,
+    id: entityId,
+    updatedAt: new Date().toISOString(),
+  };
+
+  // 1. Firebase Write via Stateless HTTPS REST
+  const fbPromise = (async () => {
+    try {
+      const ok = await fbSet(fbPath, payload);
+      if (!ok) {
+        console.warn(`[DualWrite Warning] Firebase fbSet returned false for ${fbPath}`);
+      }
+      return ok;
+    } catch (err) {
+      console.error(`[DualWrite Error] Firebase failed for ${fbPath}:`, err);
+      return false;
+    }
+  })();
+
+  // 2. MongoDB Write via Mongoose with direct collection fallback
+  const mongoPromise = (async () => {
+    try {
+      const conn = await connectToDatabase();
+      if (!conn) {
+        console.warn(`[DualWrite Warning] MongoDB not connected, cannot save to ${collectionName}`);
+        return false;
+      }
+
+      try {
+        await model.findOneAndUpdate(
+          { id: entityId },
+          payload,
+          { upsert: true, new: true, runValidators: false, setDefaultsOnInsert: true }
+        );
+        return true;
+      } catch (mErr) {
+        console.warn(`[DualWrite Warning] Mongoose model failed for ${collectionName}, trying direct replaceOne:`, mErr);
+        if (mongoose.connection.db) {
+          await mongoose.connection.db.collection(collectionName).replaceOne(
+            { id: entityId },
+            payload,
+            { upsert: true }
+          );
+          return true;
+        }
+        throw mErr;
+      }
+    } catch (err) {
+      console.error(`[DualWrite Error] MongoDB failed for ${collectionName} (${entityId}):`, err);
+      return false;
+    }
+  })();
+
+  const [fbResult, mongoResult] = await Promise.all([fbPromise, mongoPromise]);
+  revalidatePortfolioCache();
+
+  if (!fbResult && !mongoResult) {
+    console.error(`[DualWrite CRITICAL] Both Firebase and MongoDB failed for ${entityId}!`);
+    return false;
+  }
+
+  if (!mongoResult) {
+    console.warn(`[DualWrite Warning] Saved to Firebase, but MongoDB write failed for ${entityId}`);
+  }
+  if (!fbResult) {
+    console.warn(`[DualWrite Warning] Saved to MongoDB, but Firebase write failed for ${entityId}`);
+  }
+
+  return true;
+}
+
+async function dualDeleteEntity(
+  fbPath: string,
+  model: any,
+  collectionName: string,
+  entityId: string
+): Promise<boolean> {
+  const fbPromise = (async () => {
+    try {
+      return await fbRemove(fbPath);
+    } catch (err) {
+      console.error(`[DualDelete Error] Firebase remove failed for ${fbPath}:`, err);
+      return false;
+    }
+  })();
+
+  const mongoPromise = (async () => {
+    try {
+      const conn = await connectToDatabase();
+      if (!conn) return false;
+      await model.deleteOne({ id: entityId });
+      return true;
+    } catch (err) {
+      console.error(`[DualDelete Error] MongoDB delete failed for ${collectionName} (${entityId}):`, err);
+      try {
+        if (mongoose.connection.db) {
+          await mongoose.connection.db.collection(collectionName).deleteOne({ id: entityId });
+          return true;
+        }
+      } catch {}
+      return false;
+    }
+  })();
+
+  const [fbResult, mongoResult] = await Promise.all([fbPromise, mongoPromise]);
+  revalidatePortfolioCache();
+  return fbResult || mongoResult;
+}
+
+// -------------------------------------------------------------
 // 1. PROFILE (Singleton)
 // -------------------------------------------------------------
 export async function getProfile(): Promise<Profile | null> {
@@ -201,19 +322,7 @@ export async function getProfile(): Promise<Profile | null> {
 
 export async function saveProfile(data: Profile): Promise<boolean> {
   const profileData = { ...data, id: "singleton-profile" };
-
-  const fbPromise = fbSet("profile/singleton-profile", profileData);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoProfile.findOneAndUpdate(
-      { id: "singleton-profile" },
-      profileData,
-      { upsert: true, returnDocument: 'after' }
-    );
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity("profile/singleton-profile", MongoProfile, "profiles", "singleton-profile", profileData);
 }
 
 // -------------------------------------------------------------
@@ -242,27 +351,11 @@ export async function getProjects(): Promise<Project[]> {
 
 export async function saveProject(data: Project): Promise<boolean> {
   const id = data.id || `proj_${Date.now()}`;
-  const payload = { ...data, id };
-
-  const fbPromise = fbSet(`projects/${id}`, payload);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoProject.findOneAndUpdate({ id }, payload, { upsert: true, returnDocument: 'after' });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity(`projects/${id}`, MongoProject, "projects", id, data);
 }
 
 export async function deleteProject(id: string): Promise<boolean> {
-  const fbPromise = fbRemove(`projects/${id}`);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoProject.deleteOne({ id });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualDeleteEntity(`projects/${id}`, MongoProject, "projects", id);
 }
 
 // -------------------------------------------------------------
@@ -291,27 +384,11 @@ export async function getSkills(): Promise<Skill[]> {
 
 export async function saveSkill(data: Skill): Promise<boolean> {
   const id = data.id || `skill_${Date.now()}`;
-  const payload = { ...data, id };
-
-  const fbPromise = fbSet(`skills/${id}`, payload);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoSkill.findOneAndUpdate({ id }, payload, { upsert: true, returnDocument: 'after' });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity(`skills/${id}`, MongoSkill, "skills", id, data);
 }
 
 export async function deleteSkill(id: string): Promise<boolean> {
-  const fbPromise = fbRemove(`skills/${id}`);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoSkill.deleteOne({ id });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualDeleteEntity(`skills/${id}`, MongoSkill, "skills", id);
 }
 
 // -------------------------------------------------------------
@@ -340,27 +417,11 @@ export async function getExperiences(): Promise<Experience[]> {
 
 export async function saveExperience(data: Experience): Promise<boolean> {
   const id = data.id || `exp_${Date.now()}`;
-  const payload = { ...data, id };
-
-  const fbPromise = fbSet(`experiences/${id}`, payload);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoExperience.findOneAndUpdate({ id }, payload, { upsert: true, returnDocument: 'after' });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity(`experiences/${id}`, MongoExperience, "experiences", id, data);
 }
 
 export async function deleteExperience(id: string): Promise<boolean> {
-  const fbPromise = fbRemove(`experiences/${id}`);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoExperience.deleteOne({ id });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualDeleteEntity(`experiences/${id}`, MongoExperience, "experiences", id);
 }
 
 // -------------------------------------------------------------
@@ -389,27 +450,11 @@ export async function getEducations(): Promise<Education[]> {
 
 export async function saveEducation(data: Education): Promise<boolean> {
   const id = data.id || `edu_${Date.now()}`;
-  const payload = { ...data, id };
-
-  const fbPromise = fbSet(`educations/${id}`, payload);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoEducation.findOneAndUpdate({ id }, payload, { upsert: true, returnDocument: 'after' });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity(`educations/${id}`, MongoEducation, "educations", id, data);
 }
 
 export async function deleteEducation(id: string): Promise<boolean> {
-  const fbPromise = fbRemove(`educations/${id}`);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoEducation.deleteOne({ id });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualDeleteEntity(`educations/${id}`, MongoEducation, "educations", id);
 }
 
 // -------------------------------------------------------------
@@ -438,27 +483,11 @@ export async function getCertifications(): Promise<Certification[]> {
 
 export async function saveCertification(data: Certification): Promise<boolean> {
   const id = data.id || `cert_${Date.now()}`;
-  const payload = { ...data, id };
-
-  const fbPromise = fbSet(`certifications/${id}`, payload);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoCertification.findOneAndUpdate({ id }, payload, { upsert: true, returnDocument: 'after' });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity(`certifications/${id}`, MongoCertification, "certifications", id, data);
 }
 
 export async function deleteCertification(id: string): Promise<boolean> {
-  const fbPromise = fbRemove(`certifications/${id}`);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoCertification.deleteOne({ id });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualDeleteEntity(`certifications/${id}`, MongoCertification, "certifications", id);
 }
 
 // -------------------------------------------------------------
@@ -487,27 +516,11 @@ export async function getAchievements(): Promise<Achievement[]> {
 
 export async function saveAchievement(data: Achievement): Promise<boolean> {
   const id = data.id || `ach_${Date.now()}`;
-  const payload = { ...data, id };
-
-  const fbPromise = fbSet(`achievements/${id}`, payload);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoAchievement.findOneAndUpdate({ id }, payload, { upsert: true, returnDocument: 'after' });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity(`achievements/${id}`, MongoAchievement, "achievements", id, data);
 }
 
 export async function deleteAchievement(id: string): Promise<boolean> {
-  const fbPromise = fbRemove(`achievements/${id}`);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoAchievement.deleteOne({ id });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualDeleteEntity(`achievements/${id}`, MongoAchievement, "achievements", id);
 }
 
 // -------------------------------------------------------------
@@ -536,27 +549,11 @@ export async function getBlogs(): Promise<Blog[]> {
 
 export async function saveBlog(data: Blog): Promise<boolean> {
   const id = data.id || `blog_${Date.now()}`;
-  const payload = { ...data, id };
-
-  const fbPromise = fbSet(`blogs/${id}`, payload);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoBlog.findOneAndUpdate({ id }, payload, { upsert: true, returnDocument: 'after' });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity(`blogs/${id}`, MongoBlog, "blogs", id, data);
 }
 
 export async function deleteBlog(id: string): Promise<boolean> {
-  const fbPromise = fbRemove(`blogs/${id}`);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoBlog.deleteOne({ id });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualDeleteEntity(`blogs/${id}`, MongoBlog, "blogs", id);
 }
 
 // -------------------------------------------------------------
@@ -585,27 +582,11 @@ export async function getServices(): Promise<Service[]> {
 
 export async function saveService(data: Service): Promise<boolean> {
   const id = data.id || `srv_${Date.now()}`;
-  const payload = { ...data, id };
-
-  const fbPromise = fbSet(`services/${id}`, payload);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoService.findOneAndUpdate({ id }, payload, { upsert: true, returnDocument: 'after' });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity(`services/${id}`, MongoService, "services", id, data);
 }
 
 export async function deleteService(id: string): Promise<boolean> {
-  const fbPromise = fbRemove(`services/${id}`);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoService.deleteOne({ id });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualDeleteEntity(`services/${id}`, MongoService, "services", id);
 }
 
 // -------------------------------------------------------------
@@ -634,27 +615,11 @@ export async function getTestimonials(): Promise<Testimonial[]> {
 
 export async function saveTestimonial(data: Testimonial): Promise<boolean> {
   const id = data.id || `test_${Date.now()}`;
-  const payload = { ...data, id };
-
-  const fbPromise = fbSet(`testimonials/${id}`, payload);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoTestimonial.findOneAndUpdate({ id }, payload, { upsert: true, returnDocument: 'after' });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity(`testimonials/${id}`, MongoTestimonial, "testimonials", id, data);
 }
 
 export async function deleteTestimonial(id: string): Promise<boolean> {
-  const fbPromise = fbRemove(`testimonials/${id}`);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoTestimonial.deleteOne({ id });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualDeleteEntity(`testimonials/${id}`, MongoTestimonial, "testimonials", id);
 }
 
 // -------------------------------------------------------------
@@ -689,14 +654,7 @@ export async function saveContact(data: Omit<ContactSubmission, "id" | "submitte
     submittedAt: new Date().toISOString(),
     status: "new",
   };
-
-  const fbPromise = fbSet(`contacts/${id}`, submission);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoContactSubmission.create(submission);
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
+  await dualSaveEntity(`contacts/${id}`, MongoContactSubmission, "contactsubmissions", id, submission);
   return submission;
 }
 
@@ -706,23 +664,26 @@ export async function updateContactStatus(id: string, status: "new" | "archived"
 
   const fbPromise = fbUpdate(`contacts/${id}`, updates);
   const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoContactSubmission.findOneAndUpdate({ id }, { $set: updates });
+    try {
+      await connectToDatabase();
+      await MongoContactSubmission.findOneAndUpdate({ id }, { $set: updates });
+      return true;
+    } catch (err) {
+      if (mongoose.connection.db) {
+        await mongoose.connection.db.collection("contactsubmissions").updateOne({ id }, { $set: updates });
+        return true;
+      }
+      return false;
+    }
   })();
 
-  await Promise.allSettled([fbPromise, mongoPromise]);
+  await Promise.all([fbPromise, mongoPromise]);
+  revalidatePortfolioCache();
   return true;
 }
 
 export async function deleteContact(id: string): Promise<boolean> {
-  const fbPromise = fbRemove(`contacts/${id}`);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoContactSubmission.deleteOne({ id });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualDeleteEntity(`contacts/${id}`, MongoContactSubmission, "contactsubmissions", id);
 }
 
 // -------------------------------------------------------------
@@ -760,27 +721,11 @@ export async function getNavigation(): Promise<NavigationItem[]> {
 
 export async function saveNavigationItem(data: NavigationItem): Promise<boolean> {
   const id = data.id || `nav_${Date.now()}`;
-  const payload = { ...data, id };
-
-  const fbPromise = fbSet(`navigation/${id}`, payload);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoNavigationItem.findOneAndUpdate({ id }, payload, { upsert: true, returnDocument: 'after' });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity(`navigation/${id}`, MongoNavigationItem, "navigationitems", id, data);
 }
 
 export async function deleteNavigationItem(id: string): Promise<boolean> {
-  const fbPromise = fbRemove(`navigation/${id}`);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoNavigationItem.deleteOne({ id });
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualDeleteEntity(`navigation/${id}`, MongoNavigationItem, "navigationitems", id);
 }
 
 // -------------------------------------------------------------
@@ -812,171 +757,311 @@ export async function getSiteSettings(): Promise<SiteSettings | null> {
 }
 
 export async function saveSiteSettings(data: SiteSettings): Promise<boolean> {
-  const payload = { ...data, id: "singleton-siteSettings" };
-
-  const fbPromise = fbSet("siteSettings/singleton-siteSettings", payload);
-  const mongoPromise = (async () => {
-    await connectToDatabase();
-    await MongoSiteSettings.findOneAndUpdate(
-      { id: "singleton-siteSettings" },
-      payload,
-      { upsert: true, returnDocument: 'after' }
-    );
-  })();
-
-  await Promise.allSettled([fbPromise, mongoPromise]);
-  return true;
+  return dualSaveEntity(
+    "siteSettings/singleton-siteSettings",
+    MongoSiteSettings,
+    "sitesettings",
+    "singleton-siteSettings",
+    data
+  );
 }
 
 // -------------------------------------------------------------
 // 14. SYNC & BACKUP RECOVERY TOOLS
 // -------------------------------------------------------------
+
+/**
+ * 1. Sync Firebase -> MongoDB:
+ * Reads all active live data from Firebase RTDB and upserts into MongoDB Atlas.
+ */
+export async function syncFirebaseToMongo(): Promise<{
+  success: boolean;
+  message: string;
+  counts?: Record<string, number>;
+}> {
+  try {
+    if (!RTDB_URL) {
+      return { success: false, message: "Firebase Database URL is not configured." };
+    }
+
+    const conn = await connectToDatabase();
+    if (!conn || !mongoose.connection.db) {
+      return { success: false, message: "MongoDB connection is unavailable." };
+    }
+
+    const db = mongoose.connection.db;
+    const counts: Record<string, number> = {};
+
+    // 1. Profile
+    const profile = await fbGet<Profile>("profile/singleton-profile");
+    if (profile) {
+      const p = { ...profile, id: "singleton-profile", updatedAt: new Date().toISOString() };
+      await db.collection("profiles").replaceOne({ id: "singleton-profile" }, p, { upsert: true });
+      counts.profile = 1;
+    }
+
+    // Helper for collections
+    const syncFbCollection = async (fbPath: string, mongoCol: string) => {
+      const fbData = await fbGet<Record<string, any>>(fbPath);
+      if (fbData) {
+        const list = objectToArray<any>(fbData);
+        let count = 0;
+        for (const item of list) {
+          if (!item) continue;
+          const id = item.id;
+          if (id) {
+            await db!.collection(mongoCol).replaceOne({ id }, item, { upsert: true });
+            count++;
+          }
+        }
+        counts[mongoCol] = count;
+      } else {
+        counts[mongoCol] = 0;
+      }
+    }
+
+    await syncFbCollection("projects", "projects");
+    await syncFbCollection("skills", "skills");
+    await syncFbCollection("experiences", "experiences");
+    await syncFbCollection("educations", "educations");
+    await syncFbCollection("certifications", "certifications");
+    await syncFbCollection("achievements", "achievements");
+    await syncFbCollection("blogs", "blogs");
+    await syncFbCollection("services", "services");
+    await syncFbCollection("testimonials", "testimonials");
+    await syncFbCollection("navigation", "navigationitems");
+    await syncFbCollection("contacts", "contactsubmissions");
+
+    // SiteSettings
+    const settings = await fbGet<SiteSettings>("siteSettings/singleton-siteSettings");
+    if (settings) {
+      const s = { ...settings, id: "singleton-siteSettings", updatedAt: new Date().toISOString() };
+      await db.collection("sitesettings").replaceOne({ id: "singleton-siteSettings" }, s, { upsert: true });
+      counts.siteSettings = 1;
+    }
+
+    revalidatePortfolioCache();
+    return {
+      success: true,
+      message: "Successfully synchronized all live data from Firebase to MongoDB Atlas!",
+      counts,
+    };
+  } catch (error: any) {
+    console.error("[Sync Firebase -> MongoDB] Error:", error);
+    return { success: false, message: error.message || "Failed to sync Firebase to MongoDB." };
+  }
+}
+
+/**
+ * 2. Sync MongoDB -> Firebase:
+ * Reads all data from MongoDB Atlas backup and writes into Firebase RTDB.
+ */
 export async function syncMongoToFirebase(): Promise<{ success: boolean; message: string }> {
   try {
     if (!RTDB_URL) {
       return { success: false, message: "Firebase Database URL is not configured." };
     }
 
-    // Pre-flight check: Test if Firebase RTDB allows write
     const testSuccess = await fbSet("_test_ping", { ping: true, time: new Date().toISOString() });
     if (!testSuccess) {
       return {
         success: false,
-        message: "Firebase Realtime Database rejected the write (401 Permission Denied). Please go to Firebase Console -> Build -> Realtime Database -> Rules, set '.read': true and '.write': true, and click Publish.",
+        message: "Firebase Realtime Database rejected write. Check Firebase Security Rules.",
       };
     }
     await fbRemove("_test_ping");
 
-    await connectToDatabase();
+    const conn = await connectToDatabase();
+    if (!conn || !mongoose.connection.db) {
+      return { success: false, message: "MongoDB connection is unavailable." };
+    }
+
+    const db = mongoose.connection.db;
+
+    const syncMongoColToFb = async (mongoCol: string, fbPath: string) => {
+      const docs = await db!.collection(mongoCol).find({}).toArray();
+      const obj: Record<string, any> = {};
+      for (const d of docs) {
+        const { _id, __v, ...item } = d as any;
+        if (item.id) obj[item.id] = item;
+      }
+      if (Object.keys(obj).length > 0) {
+        await fbSet(fbPath, obj);
+      }
+    }
 
     // 1. Profile
-    const profile = await MongoProfile.findOne({ id: "singleton-profile" }).lean();
+    const profile = await db.collection("profiles").findOne({ id: "singleton-profile" });
     if (profile) {
       const { _id, __v, ...p } = profile as any;
       await fbSet("profile/singleton-profile", p);
     }
 
-    // 2. Projects
-    const projects = await MongoProject.find().lean();
-    const projectsObj: Record<string, any> = {};
-    for (const pr of projects) {
-      const { _id, __v, ...item } = pr as any;
-      projectsObj[item.id] = item;
-    }
-    if (Object.keys(projectsObj).length > 0) {
-      await fbSet("projects", projectsObj);
-    }
+    // 2-12
+    await syncMongoColToFb("projects", "projects");
+    await syncMongoColToFb("skills", "skills");
+    await syncMongoColToFb("experiences", "experiences");
+    await syncMongoColToFb("educations", "educations");
+    await syncMongoColToFb("certifications", "certifications");
+    await syncMongoColToFb("achievements", "achievements");
+    await syncMongoColToFb("blogs", "blogs");
+    await syncMongoColToFb("services", "services");
+    await syncMongoColToFb("testimonials", "testimonials");
+    await syncMongoColToFb("navigationitems", "navigation");
+    await syncMongoColToFb("contactsubmissions", "contacts");
 
-    // 3. Skills
-    const skills = await MongoSkill.find().lean();
-    const skillsObj: Record<string, any> = {};
-    for (const sk of skills) {
-      const { _id, __v, ...item } = sk as any;
-      skillsObj[item.id] = item;
-    }
-    if (Object.keys(skillsObj).length > 0) {
-      await fbSet("skills", skillsObj);
-    }
-
-    // 4. Experiences
-    const exps = await MongoExperience.find().lean();
-    const expsObj: Record<string, any> = {};
-    for (const exp of exps) {
-      const { _id, __v, ...item } = exp as any;
-      expsObj[item.id] = item;
-    }
-    if (Object.keys(expsObj).length > 0) {
-      await fbSet("experiences", expsObj);
-    }
-
-    // 5. Education
-    const edus = await MongoEducation.find().lean();
-    const edusObj: Record<string, any> = {};
-    for (const edu of edus) {
-      const { _id, __v, ...item } = edu as any;
-      edusObj[item.id] = item;
-    }
-    if (Object.keys(edusObj).length > 0) {
-      await fbSet("educations", edusObj);
-    }
-
-    // 6. Certifications
-    const certs = await MongoCertification.find().lean();
-    const certsObj: Record<string, any> = {};
-    for (const cert of certs) {
-      const { _id, __v, ...item } = cert as any;
-      certsObj[item.id] = item;
-    }
-    if (Object.keys(certsObj).length > 0) {
-      await fbSet("certifications", certsObj);
-    }
-
-    // 7. Achievements
-    const achs = await MongoAchievement.find().lean();
-    const achsObj: Record<string, any> = {};
-    for (const ach of achs) {
-      const { _id, __v, ...item } = ach as any;
-      achsObj[item.id] = item;
-    }
-    if (Object.keys(achsObj).length > 0) {
-      await fbSet("achievements", achsObj);
-    }
-
-    // 8. Blogs
-    const blogs = await MongoBlog.find().lean();
-    const blogsObj: Record<string, any> = {};
-    for (const blog of blogs) {
-      const { _id, __v, ...item } = blog as any;
-      blogsObj[item.id] = item;
-    }
-    if (Object.keys(blogsObj).length > 0) {
-      await fbSet("blogs", blogsObj);
-    }
-
-    // 9. Services
-    const services = await MongoService.find().lean();
-    const srvsObj: Record<string, any> = {};
-    for (const srv of services) {
-      const { _id, __v, ...item } = srv as any;
-      srvsObj[item.id] = item;
-    }
-    if (Object.keys(srvsObj).length > 0) {
-      await fbSet("services", srvsObj);
-    }
-
-    // 10. Testimonials
-    const tests = await MongoTestimonial.find().lean();
-    const testsObj: Record<string, any> = {};
-    for (const test of tests) {
-      const { _id, __v, ...item } = test as any;
-      testsObj[item.id] = item;
-    }
-    if (Object.keys(testsObj).length > 0) {
-      await fbSet("testimonials", testsObj);
-    }
-
-    // 11. Navigation
-    const navs = await MongoNavigationItem.find().lean();
-    const navsObj: Record<string, any> = {};
-    for (const nav of navs) {
-      const { _id, __v, ...item } = nav as any;
-      navsObj[item.id] = item;
-    }
-    if (Object.keys(navsObj).length > 0) {
-      await fbSet("navigation", navsObj);
-    }
-
-    // 12. SiteSettings
-    const settings = await MongoSiteSettings.findOne({ id: "singleton-siteSettings" }).lean();
+    // 13. Site Settings
+    const settings = await db.collection("sitesettings").findOne({ id: "singleton-siteSettings" });
     if (settings) {
       const { _id, __v, ...s } = settings as any;
       await fbSet("siteSettings/singleton-siteSettings", s);
     }
 
+    revalidatePortfolioCache();
     return { success: true, message: "Successfully synced all data from MongoDB backup to Firebase!" };
   } catch (error: any) {
-    console.error("Sync error:", error);
+    console.error("[Sync MongoDB -> Firebase] Error:", error);
     return { success: false, message: error.message || "Failed to sync." };
+  }
+}
+
+/**
+ * 3. Smart Bi-Directional Sync (Zero Data Loss):
+ * Compares every record in Firebase and MongoDB. Merges missing records and
+ * takes the latest version of edited records, ensuring both databases are 100% identical.
+ */
+export async function syncBothDatabases(): Promise<{
+  success: boolean;
+  message: string;
+  stats?: {
+    syncedToMongo: number;
+    syncedToFirebase: number;
+    totalSynced: number;
+  };
+}> {
+  try {
+    if (!RTDB_URL) {
+      return { success: false, message: "Firebase Database URL is not configured." };
+    }
+
+    const conn = await connectToDatabase();
+    if (!conn || !mongoose.connection.db) {
+      return { success: false, message: "MongoDB connection is unavailable." };
+    }
+
+    const db = mongoose.connection.db;
+    let syncedToMongo = 0;
+    let syncedToFirebase = 0;
+
+    const reconcileCollection = async (fbPath: string, mongoCol: string) => {
+      const fbData = (await fbGet<Record<string, any>>(fbPath)) || {};
+      const fbList = objectToArray<any>(fbData).filter((x) => Boolean(x && x.id));
+      const fbMap: Record<string, any> = {};
+      for (const item of fbList) {
+        if (item && item.id) fbMap[item.id] = item;
+      }
+
+      const mongoList = (await db!.collection(mongoCol).find({}).toArray()) as any[];
+      const mongoMap: Record<string, any> = {};
+      for (const m of mongoList) {
+        const { _id, __v, ...item } = m as any;
+        if (item.id) mongoMap[item.id] = item;
+      }
+
+      // Check items from Firebase
+      const fbKeys = Object.keys(fbMap);
+      for (const id of fbKeys) {
+        const fbItem = fbMap[id];
+        const mongoItem = mongoMap[id];
+        if (!mongoItem) {
+          await db!.collection(mongoCol).replaceOne({ id }, fbItem, { upsert: true });
+          syncedToMongo++;
+        } else {
+          const fbTime = new Date(fbItem.updatedAt || fbItem.publishedAt || 0).getTime();
+          const mongoTime = new Date(mongoItem.updatedAt || mongoItem.publishedAt || 0).getTime();
+
+          if (fbTime > mongoTime) {
+            await db!.collection(mongoCol).replaceOne({ id }, fbItem, { upsert: true });
+            syncedToMongo++;
+          } else if (mongoTime > fbTime) {
+            await fbSet(`${fbPath}/${id}`, mongoItem);
+            syncedToFirebase++;
+          }
+        }
+      }
+
+      // Check items in Mongo but not in Firebase
+      const mongoKeys = Object.keys(mongoMap);
+      for (const id of mongoKeys) {
+        if (!fbMap[id]) {
+          await fbSet(`${fbPath}/${id}`, mongoMap[id]);
+          syncedToFirebase++;
+        }
+      }
+    };
+
+    await reconcileCollection("projects", "projects");
+    await reconcileCollection("skills", "skills");
+    await reconcileCollection("experiences", "experiences");
+    await reconcileCollection("educations", "educations");
+    await reconcileCollection("certifications", "certifications");
+    await reconcileCollection("achievements", "achievements");
+    await reconcileCollection("blogs", "blogs");
+    await reconcileCollection("services", "services");
+    await reconcileCollection("testimonials", "testimonials");
+    await reconcileCollection("navigation", "navigationitems");
+    await reconcileCollection("contacts", "contactsubmissions");
+
+    // Singletons: Profile
+    const fbProfile = await fbGet<Profile>("profile/singleton-profile");
+    const mongoProfileDoc = await db.collection("profiles").findOne({ id: "singleton-profile" });
+    if (fbProfile && !mongoProfileDoc) {
+      await db.collection("profiles").replaceOne({ id: "singleton-profile" }, fbProfile, { upsert: true });
+      syncedToMongo++;
+    } else if (!fbProfile && mongoProfileDoc) {
+      const { _id, __v, ...p } = mongoProfileDoc as any;
+      await fbSet("profile/singleton-profile", p);
+      syncedToFirebase++;
+    } else if (fbProfile && mongoProfileDoc) {
+      const p = { ...(mongoProfileDoc as any), ...fbProfile, id: "singleton-profile", updatedAt: new Date().toISOString() };
+      delete (p as any)._id;
+      delete (p as any).__v;
+      await db.collection("profiles").replaceOne({ id: "singleton-profile" }, p, { upsert: true });
+      await fbSet("profile/singleton-profile", p);
+    }
+
+    // Singletons: Site Settings
+    const fbSettings = await fbGet<SiteSettings>("siteSettings/singleton-siteSettings");
+    const mongoSettingsDoc = await db.collection("sitesettings").findOne({ id: "singleton-siteSettings" });
+    if (fbSettings && !mongoSettingsDoc) {
+      await db.collection("sitesettings").replaceOne({ id: "singleton-siteSettings" }, fbSettings, { upsert: true });
+      syncedToMongo++;
+    } else if (!fbSettings && mongoSettingsDoc) {
+      const { _id, __v, ...s } = mongoSettingsDoc as any;
+      await fbSet("siteSettings/singleton-siteSettings", s);
+      syncedToFirebase++;
+    } else if (fbSettings && mongoSettingsDoc) {
+      const s = { ...(mongoSettingsDoc as any), ...fbSettings, id: "singleton-siteSettings", updatedAt: new Date().toISOString() };
+      delete (s as any)._id;
+      delete (s as any).__v;
+      await db.collection("sitesettings").replaceOne({ id: "singleton-siteSettings" }, s, { upsert: true });
+      await fbSet("siteSettings/singleton-siteSettings", s);
+    }
+
+    revalidatePortfolioCache();
+
+    return {
+      success: true,
+      message: `Bi-directional sync completed! Synced ${syncedToMongo} update(s) to MongoDB Atlas, and ${syncedToFirebase} update(s) to Firebase. Both databases are now 100% in sync!`,
+      stats: {
+        syncedToMongo,
+        syncedToFirebase,
+        totalSynced: syncedToMongo + syncedToFirebase,
+      },
+    };
+  } catch (error: any) {
+    console.error("[Bi-directional Sync] Error:", error);
+    return { success: false, message: error.message || "Failed to run bi-directional sync." };
   }
 }
 

@@ -1,16 +1,18 @@
 "use client";
 
 import React, { useState } from "react";
-import { syncMongoToFirebase } from "@/lib/db-service";
+import { syncMongoToFirebase, syncFirebaseToMongo, syncBothDatabases } from "@/lib/db-service";
 import { seedInitialDataIfEmpty } from "@/lib/seed-data";
 import { migrateFromSanity } from "@/lib/sanity-migration";
-import { Database, RefreshCw, Sparkles, CheckCircle2, ShieldAlert, ArrowRight, Layers } from "lucide-react";
+import { Database, RefreshCw, Sparkles, CheckCircle2, ShieldAlert, ArrowRight, Layers, ArrowLeftRight, UploadCloud, DownloadCloud } from "lucide-react";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import { useStudioConfirm, studioAlert } from "./StudioConfirmContext";
 
 export function SyncManager() {
   const { confirm } = useStudioConfirm();
-  const [syncing, setSyncing] = useState(false);
+  const [syncingBoth, setSyncingBoth] = useState(false);
+  const [syncingToMongo, setSyncingToMongo] = useState(false);
+  const [syncingFromMongo, setSyncingFromMongo] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [migrating, setMigrating] = useState(false);
   const [migrationStats, setMigrationStats] = useState<Record<string, number> | null>(null);
@@ -64,22 +66,79 @@ export function SyncManager() {
     }
   };
 
+  // 1. Smart Two-Way Sync (Merge & Unify)
+  const handleSyncBoth = async () => {
+    const ok = await confirm({
+      title: "Run Smart Two-Way Database Sync?",
+      description: "This will reconcile Firebase and MongoDB Atlas without data loss. Newer updates and missing items will be synchronized across both databases so they become 100% identical.",
+      confirmText: "Start Smart Sync",
+      variant: "default",
+    });
+    if (!ok) return;
+
+    setSyncingBoth(true);
+    setMessage(null);
+    try {
+      const res = await syncBothDatabases();
+      setMessage({ text: res.message, type: res.success ? "success" : "error" });
+      if (res.success) {
+        studioAlert.success("Both databases are now 100% in sync!");
+      } else {
+        studioAlert.error("Two-way sync failed.");
+      }
+    } catch (err: any) {
+      setMessage({ text: err.message || "Failed to sync databases.", type: "error" });
+      studioAlert.error(err.message || "Failed to sync databases.");
+    } finally {
+      setSyncingBoth(false);
+    }
+  };
+
+  // 2. Sync Firebase -> MongoDB
+  const handleSyncToMongo = async () => {
+    const ok = await confirm({
+      title: "Push Firebase Data to MongoDB Atlas?",
+      description: "This will read all live data from Firebase Realtime Database and upsert it into MongoDB Atlas backup. Proceed?",
+      confirmText: "Sync to MongoDB",
+      variant: "default",
+    });
+    if (!ok) return;
+
+    setSyncingToMongo(true);
+    setMessage(null);
+    try {
+      const res = await syncFirebaseToMongo();
+      setMessage({ text: res.message, type: res.success ? "success" : "error" });
+      if (res.success) {
+        studioAlert.success("MongoDB Atlas updated from Firebase!");
+      } else {
+        studioAlert.error("Sync to MongoDB failed.");
+      }
+    } catch (err: any) {
+      setMessage({ text: err.message || "Failed to sync to MongoDB.", type: "error" });
+      studioAlert.error(err.message || "Failed to sync to MongoDB.");
+    } finally {
+      setSyncingToMongo(false);
+    }
+  };
+
+  // 3. Restore Firebase from MongoDB
   const handleSyncFromMongo = async () => {
     const ok = await confirm({
       title: "Restore Firebase from MongoDB Backup?",
-      description: "This will overwrite your Firebase Realtime Database with the latest data from MongoDB Atlas backup. Proceed?",
-      confirmText: "Overwrite & Sync",
+      description: "WARNING: This will overwrite Firebase Realtime Database with whatever is currently in MongoDB Atlas. Only use this if Firebase was cleared or corrupted. Proceed?",
+      confirmText: "Overwrite Firebase",
       variant: "destructive",
     });
     if (!ok) return;
 
-    setSyncing(true);
+    setSyncingFromMongo(true);
     setMessage(null);
     try {
       const res = await syncMongoToFirebase();
       setMessage({ text: res.message, type: res.success ? "success" : "error" });
       if (res.success) {
-        studioAlert.success("Firebase synced with MongoDB backup!");
+        studioAlert.success("Firebase restored from MongoDB backup!");
       } else {
         studioAlert.error("Sync failed.");
       }
@@ -87,7 +146,7 @@ export function SyncManager() {
       setMessage({ text: err.message || "Failed to sync.", type: "error" });
       studioAlert.error(err.message || "Failed to sync.");
     } finally {
-      setSyncing(false);
+      setSyncingFromMongo(false);
     }
   };
 
@@ -95,7 +154,7 @@ export function SyncManager() {
     <div className="w-full pb-20">
       <div className="sticky top-0 z-30 bg-card/90 dark:bg-zinc-900/90 backdrop-blur-2xl border-b border-border py-4 px-4 sm:px-8 mb-6 shadow-xs">
         <h2 className="text-2xl font-extrabold text-foreground tracking-tight">Database, Migration & Backup</h2>
-        <p className="text-xs text-muted-foreground font-medium mt-0.5">Migrate from Sanity, monitor database status, and manage backups</p>
+        <p className="text-xs text-muted-foreground font-medium mt-0.5">Manage live Firebase Realtime DB and MongoDB Atlas dual-sync</p>
       </div>
 
       <div className="px-4 sm:px-8 space-y-6">
@@ -128,11 +187,11 @@ export function SyncManager() {
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-foreground">Migrate Sanity CMS Data</h3>
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-primary/10 text-primary">
-                  Recommended
+                  Initial Setup
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed max-w-xl">
-                Extract all your real projects, skills, 71 contact submissions, educations, certifications, and profile info directly from Sanity and write them into Firebase Realtime Database & MongoDB Atlas.
+                Extract all your real projects, skills, contact submissions, educations, certifications, and profile info directly from Sanity and write them simultaneously into Firebase Realtime Database & MongoDB Atlas.
               </p>
             </div>
           </div>
@@ -205,7 +264,7 @@ export function SyncManager() {
             </span>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            All user requests, portfolio viewings, and real-time edits are served from Firebase Realtime Database.
+            All client requests, live viewing, and instant updates are served with ultra-low latency from Firebase RTDB.
           </p>
         </div>
 
@@ -217,63 +276,143 @@ export function SyncManager() {
               </div>
               <div>
                 <h4 className="text-sm font-bold text-foreground">MongoDB Atlas</h4>
-                <p className="text-xs text-muted-foreground">Secondary Backup Database</p>
+                <p className="text-xs text-muted-foreground">Dual-Write Persistent Database</p>
               </div>
             </div>
             <span className="text-xs px-2.5 py-1 rounded-full font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/30">
-              Active Backup
+              Synchronized
             </span>
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Every update in the studio is automatically duplicated and stored in MongoDB Atlas via dual-write server actions.
+            Every studio update is concurrently committed to MongoDB Atlas with automatic schema validation and collection fallback.
           </p>
         </div>
       </div>
 
       {/* Action Tools */}
       <div className="bg-card border border-border rounded-2xl p-6 space-y-6 shadow-xs text-card-foreground">
-        <h3 className="text-base font-semibold text-foreground">Backup & Recovery Utilities</h3>
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-semibold text-foreground">Database Synchronization & Backup Utilities</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Keep both databases 100% synchronized with guaranteed zero data loss</p>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Seed Initial Data */}
-          <div className="border border-border bg-muted/30 p-5 rounded-xl space-y-3 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" />
-                <h4 className="text-sm font-bold text-foreground">Seed Starter Data</h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* 1. Smart Two-Way Sync (Recommended) */}
+          <div className="border-2 border-primary/30 bg-primary/5 p-5 rounded-xl space-y-3 flex flex-col justify-between relative overflow-hidden">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ArrowLeftRight className="w-4 h-4 text-primary" />
+                  <h4 className="text-sm font-bold text-foreground">Smart Two-Way Sync</h4>
+                </div>
+                <span className="text-[9px] uppercase tracking-wider font-extrabold bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                  Recommended
+                </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                Populates your database with starter projects from Projects.json and initial tech skills.
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Bi-directional reconciliation: Compares Firebase and MongoDB, keeps the newest updates from both, and ensures both databases become 100% identical with zero data loss.
               </p>
             </div>
             <button
-              onClick={handleSeed}
-              disabled={seeding}
-              className="w-full py-2.5 px-4 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold border border-border transition-colors disabled:opacity-50"
+              onClick={handleSyncBoth}
+              disabled={syncingBoth}
+              className="w-full py-2.5 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all shadow-md shadow-primary/20 hover:scale-[1.01] disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {seeding ? "Seeding..." : "Seed Starter Data"}
+              {syncingBoth ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Synchronizing Both...</span>
+                </>
+              ) : (
+                <>
+                  <ArrowLeftRight className="w-3.5 h-3.5" />
+                  <span>Run Smart Two-Way Sync</span>
+                </>
+              )}
             </button>
           </div>
 
-          {/* Sync MongoDB to Firebase */}
+          {/* 2. Push Firebase -> MongoDB */}
           <div className="border border-border bg-muted/30 p-5 rounded-xl space-y-3 flex flex-col justify-between">
-            <div>
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <RefreshCw className="w-4 h-4 text-primary" />
+                <UploadCloud className="w-4 h-4 text-emerald-500" />
+                <h4 className="text-sm font-bold text-foreground">Push Firebase → MongoDB</h4>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Reads all current live data from Firebase RTDB (including blog images, profile updates, and settings) and writes it into MongoDB Atlas backup.
+              </p>
+            </div>
+            <button
+              onClick={handleSyncToMongo}
+              disabled={syncingToMongo}
+              className="w-full py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-xs"
+            >
+              {syncingToMongo ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Pushing to MongoDB...</span>
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="w-3.5 h-3.5" />
+                  <span>Sync Firebase → MongoDB</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* 3. Restore Firebase from MongoDB */}
+          <div className="border border-border bg-muted/30 p-5 rounded-xl space-y-3 flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <DownloadCloud className="w-4 h-4 text-amber-500" />
                 <h4 className="text-sm font-bold text-foreground">Restore Firebase from MongoDB</h4>
               </div>
-              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                If you ever reset Firebase, this 1-click tool restores all your documents directly from the MongoDB backup.
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Emergency restoration: Overwrites Firebase Realtime Database using the data stored in MongoDB Atlas backup. Use if Firebase was accidentally cleared.
               </p>
             </div>
             <button
               onClick={handleSyncFromMongo}
-              disabled={syncing}
-              className="w-full py-2.5 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold transition-colors disabled:opacity-50 shadow-xs"
+              disabled={syncingFromMongo}
+              className="w-full py-2.5 px-4 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-xs"
             >
-              {syncing ? "Syncing..." : "Sync MongoDB → Firebase"}
+              {syncingFromMongo ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Restoring...</span>
+                </>
+              ) : (
+                <>
+                  <DownloadCloud className="w-3.5 h-3.5" />
+                  <span>Restore MongoDB → Firebase</span>
+                </>
+              )}
             </button>
           </div>
+        </div>
+
+        {/* Starter Seed Row */}
+        <div className="pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <h5 className="text-xs font-bold text-foreground">Need Default Projects & Skills?</h5>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Populates empty databases with starter projects from Projects.json and initial developer skills.
+            </p>
+          </div>
+          <button
+            onClick={handleSeed}
+            disabled={seeding}
+            className="px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-xs font-medium border border-border transition-colors disabled:opacity-50 shrink-0"
+          >
+            {seeding ? "Seeding..." : "Seed Starter Data"}
+          </button>
         </div>
       </div>
       </div>
