@@ -275,8 +275,8 @@ export default async function RootLayout({
                     </>
                   )}
 
-                  {/* Mode Toggle - Animated alongside AI sidebar drawer on desktop */}
-                  <ModeToggleWrapper isMaintenance={isMaintenance} />
+                  {/* Mode Toggle for Maintenance mode only (on regular pages, theme toggle is integrated in FloatingDock) */}
+                  {isMaintenance && <ModeToggleWrapper isMaintenance={true} />}
                 </SidebarProvider>
               </SmoothScrollProvider>
             </ThemeProvider>

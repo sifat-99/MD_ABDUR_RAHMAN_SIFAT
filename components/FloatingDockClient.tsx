@@ -1,6 +1,8 @@
 "use client";
 
 import { IconMenu2, IconX } from "@tabler/icons-react";
+import { Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { DynamicIcon } from "./DynamicIcon";
@@ -201,6 +203,10 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
               )}
             </div>
           )}
+
+          {/* Theme Toggle Button inside Dock */}
+          <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700/60 my-auto shrink-0" />
+          <DockThemeToggle isVertical={false} />
         </div>
       </div>
 
@@ -292,6 +298,10 @@ export function FloatingDockClient({ navItems }: FloatingDockClientProps) {
                 )}
               </div>
             )}
+
+            {/* Mobile Theme Toggle */}
+            <div className="w-full h-px bg-zinc-300 dark:bg-zinc-700/60 my-0.5 shrink-0" />
+            <DockThemeToggle isVertical={true} onToggle={() => setMobileMenuOpen(false)} />
           </div>
         )}
       </div>
@@ -481,5 +491,71 @@ function DockIcon({
     >
       {content}
     </Link>
+  );
+}
+
+function DockThemeToggle({
+  isVertical,
+  onToggle,
+}: {
+  isVertical: boolean;
+  onToggle?: () => void;
+}) {
+  const { setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const nextTheme = resolvedTheme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    onToggle?.();
+  };
+
+  const isDark = mounted ? resolvedTheme === "dark" : false;
+  const label = isDark ? "Switch to Light Mode" : "Switch to Dark Mode";
+
+  const baseIconClasses =
+    "relative flex items-center justify-center w-full h-full rounded-full transition-all";
+  const verticalIconClasses = `${baseIconClasses} bg-white/70 dark:bg-white/12 border border-white/85 dark:border-white/20 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1.5px_rgba(255,255,255,0.95)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_1.5px_rgba(255,255,255,0.2)] duration-300 hover:scale-110 hover:!bg-primary hover:!border-primary hover:!shadow-[0_10px_20px_-4px_color-mix(in_srgb,var(--primary)_50%,transparent),inset_0_1px_1px_rgba(255,255,255,0.8)]`;
+
+  const horizontalIconClasses = `${baseIconClasses} bg-white/70 dark:bg-white/12 border border-white/85 dark:border-white/20 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.06),inset_0_1px_1.5px_rgba(255,255,255,0.95)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.4),inset_0_1px_1.5px_rgba(255,255,255,0.2)] duration-300 ease-out hover:scale-125 hover:-translate-y-2 md:hover:-translate-y-2.5 hover:!bg-primary hover:!border-primary hover:!shadow-[0_12px_24px_-4px_color-mix(in_srgb,var(--primary)_50%,transparent),inset_0_1px_1px_rgba(255,255,255,0.8)]`;
+
+  return (
+    <button
+      type="button"
+      onClick={handleToggle}
+      className="group/theme relative flex items-center justify-center w-12 h-12 md:w-12 md:h-12 cursor-pointer"
+      aria-label={label}
+      title={label}
+    >
+      <div className={isVertical ? verticalIconClasses : horizontalIconClasses}>
+        <div className="w-5 h-5 md:w-5.5 md:h-5.5 text-zinc-900 dark:text-zinc-50 group-hover/theme:!text-primary-foreground transition-colors duration-200 flex items-center justify-center relative [filter:drop-shadow(0_1px_0_rgba(255,255,255,0.85))] dark:[filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.8))] group-hover/theme:![filter:none]">
+          <Sun className="h-5 w-5 scale-100 rotate-0 transition-transform duration-500 ease-out dark:scale-0 dark:-rotate-90 stroke-[2.2] group-hover/theme:rotate-45" />
+          <Moon className="absolute h-5 w-5 scale-0 rotate-90 transition-transform duration-500 ease-out dark:scale-100 dark:rotate-0 stroke-[2.2] group-hover/theme:-rotate-12" />
+        </div>
+      </div>
+      {/* Tooltip */}
+      <div
+        className={`absolute px-3 py-1.5 rounded-xl bg-zinc-900/95 dark:bg-zinc-100/95 backdrop-blur-xl border border-zinc-800 dark:border-zinc-200 text-xs font-bold text-zinc-100 dark:text-zinc-900 whitespace-nowrap opacity-0 scale-90 group-hover/theme:opacity-100 group-hover/theme:scale-100 transition-all duration-300 pointer-events-none shadow-xl shadow-black/25 z-50 ${
+          !isVertical
+            ? "-top-10 md:-top-12 left-1/2 -translate-x-1/2 group-hover/theme:-translate-y-2"
+            : "right-14 top-1/2 -translate-y-1/2 group-hover/theme:-translate-x-1"
+        }`}
+      >
+        {label}
+        <div
+          className={`absolute w-2 h-2 rotate-45 bg-zinc-900/95 dark:bg-zinc-100/95 ${
+            !isVertical
+              ? "-bottom-1 left-1/2 -translate-x-1/2 border-r border-b"
+              : "-right-1 top-1/2 -translate-y-1/2 border-r border-t"
+          } border-zinc-800 dark:border-zinc-200`}
+        />
+      </div>
+    </button>
   );
 }

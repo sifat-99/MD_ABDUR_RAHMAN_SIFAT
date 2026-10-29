@@ -308,29 +308,23 @@ function SidebarInset({
   children,
   ...props
 }: React.ComponentProps<"main">) {
-  const { open, isMobile, setOpen } = useSidebar();
+  const { open, isMobile } = useSidebar();
   const isShifted = !isMobile && open;
 
   return (
     <main
       data-slot="sidebar-inset"
       className={cn(
-        "bg-background relative flex w-full flex-1 flex-col transition-transform duration-300 ease-in-out",
-        isShifted && "md:-translate-x-[var(--sidebar-width)]",
+        "bg-background relative flex flex-1 flex-col min-w-0 transition-[width,max-width] duration-300 ease-in-out",
+        isShifted
+          ? "md:w-[calc(100vw-var(--sidebar-width))] md:max-w-[calc(100vw-var(--sidebar-width))]"
+          : "w-full max-w-full",
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
         className,
       )}
       {...props}
     >
       {children}
-      {/* Subtle backdrop overlay on desktop when drawer pushes content */}
-      {isShifted && (
-        <div
-          onClick={() => setOpen(false)}
-          className="fixed inset-0 z-30 bg-black/15 dark:bg-black/35 backdrop-blur-[1px] transition-opacity duration-300 cursor-pointer"
-          aria-label="Close sidebar"
-        />
-      )}
     </main>
   );
 }
