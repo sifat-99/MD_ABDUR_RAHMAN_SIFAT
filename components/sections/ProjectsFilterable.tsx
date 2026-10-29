@@ -109,6 +109,11 @@ export function ProjectsFilterable({ initialProjects }: ProjectsFilterableProps)
                         src={project.coverImage}
                         alt={project.title || "Project image"}
                         fill
+                        unoptimized={Boolean(
+                          project.coverImage.endsWith(".svg") ||
+                          project.coverImage.includes(".svg") ||
+                          project.coverImage.includes("ufs.sh")
+                        )}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />

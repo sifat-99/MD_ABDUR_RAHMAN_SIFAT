@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
     ],
   },
   images: {
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
@@ -39,11 +42,23 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "**.ufs.sh",
+        hostname: "*.utfs.io",
       },
       {
         protocol: "https",
         hostname: "ufs.sh",
+      },
+      {
+        protocol: "https",
+        hostname: "*.ufs.sh",
+      },
+      {
+        protocol: "https",
+        hostname: "**.ufs.sh",
+      },
+      {
+        protocol: "https",
+        hostname: "0s3ie7iutk.ufs.sh",
       },
       {
         protocol: "https",
