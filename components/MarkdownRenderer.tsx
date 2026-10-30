@@ -2,11 +2,26 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import { MermaidDiagram } from "./MermaidDiagram";
 
 interface MarkdownRendererProps {
   content: string;
   className?: string;
 }
+
+const isMermaidDiagram = (className?: string, content?: string) => {
+  const cn = (className || "").toLowerCase();
+  const text = (content || "").trim();
+  return (
+    cn.includes("language-mermaid") ||
+    cn.includes("mermaid") ||
+    cn.includes("sequencediagram") ||
+    cn.includes("flowchart") ||
+    /^(sequenceDiagram|flowchart|graph\s+(TD|LR|TB|RL|BT)|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph)/m.test(
+      text
+    )
+  );
+};
 
 export function MarkdownRenderer({ content, className = "" }: MarkdownRendererProps) {
   if (!content) return null;
@@ -83,17 +98,41 @@ export function MarkdownRenderer({ content, className = "" }: MarkdownRendererPr
                 </code>
               );
             }
+
+            const rawContent = Array.isArray(children)
+              ? children.map((c: any) => (typeof c === "string" ? c : "")).join("")
+              : String(children || "");
+            const codeText = rawContent.replace(/\n$/, "").trim();
+
+            if (isMermaidDiagram(className, codeText)) {
+              return <MermaidDiagram chart={codeText} />;
+            }
+
             return (
               <code className={className} {...props}>
                 {children}
               </code>
             );
           },
-          pre: ({ children, ...props }) => (
-            <pre className="p-4 rounded-xl bg-zinc-950 text-zinc-100 overflow-x-auto my-5 text-xs font-mono border border-border shadow-md" {...props}>
-              {children}
-            </pre>
-          ),
+          pre: ({ children, ...props }: any) => {
+            const childElement = React.isValidElement(children) ? (children as React.ReactElement<any>) : null;
+            const childProps = childElement?.props || {};
+            const childClass = childProps?.className || "";
+            const rawContent = Array.isArray(childProps?.children)
+              ? childProps.children.map((c: any) => (typeof c === "string" ? c : "")).join("")
+              : String(childProps?.children || "");
+            const codeText = rawContent.replace(/\n$/, "").trim();
+
+            if (isMermaidDiagram(childClass, codeText)) {
+              return <>{children}</>;
+            }
+
+            return (
+              <pre className="p-4 rounded-xl bg-zinc-950 text-zinc-100 overflow-x-auto my-5 text-xs font-mono border border-border shadow-md" {...props}>
+                {children}
+              </pre>
+            );
+          },
           table: ({ children, ...props }) => (
             <div className="w-full overflow-x-auto my-6 rounded-2xl border border-primary/20 shadow-xs backdrop-blur-xs">
               <table className="w-full border-collapse text-left text-sm" {...props}>
